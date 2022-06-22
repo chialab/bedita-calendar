@@ -19,4 +19,12 @@ class Application extends BaseApplication
     {
         $this->addPlugin('BEdita/Core');
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function middleware($middlewareQueue)
+    {
+        return $middlewareQueue;
+    }
 }
