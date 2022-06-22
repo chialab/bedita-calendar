@@ -1,0 +1,17 @@
+{
+    "name": "@chialab/bedita-calendar",
+    "version": "1.0.0",
+    "main": "resources/index.js",
+    "module": "resources/index.js",
+    "exports": {
+        ".": {
+            "default": "./resources/index.js"
+        }
+    },
+    "repository": "git@github.com:chialab/bedita-calendar.git",
+    "author": "Chialab <dev@chialab.it> (https://www.chialab.io)",
+    "license": "MIT",
+    "dependencies": {
+        "@chialab/dna": "^3.18.2"
+    }
+}

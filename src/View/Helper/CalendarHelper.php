@@ -169,36 +169,35 @@ class CalendarHelper extends DateRangesHelper
     }
 
     /**
-     * A JavaScript to update days select on month/year changes.
+     * Create calendar filters form.
      *
-     * @return string JavaScript code.
+     * @param mixed $context The context for which the form is being defined.
+     *   Can be a ContextInterface instance, ORM entity, ORM resultset, or an
+     *   array of meta data. You can use null to make a context-less form.
+     * @param array $options An array of html attributes and options.
+     * @return string An formatted opening FORM tag.
      */
-    protected function onDateChangeScript(): string
+    public function createFiltersForm($context = null, ?array $options = null)
     {
-        $dayParam = $this->getConfig('dayParam');
-        $monthParam = $this->getConfig('monthParam');
-        $yearParam = $this->getConfig('yearParam');
+        $options = $options ?? [];
 
-        $code = 'var form = event.target.closest(\'form\');';
-        $code .= 'if (form) {';
-        $code .= sprintf('var days = form.querySelector(%s);', json_encode(sprintf('[name=%s]', $dayParam)));
-        $code .= 'if (days) {';
-        $code .= 'var data = new FormData(form);';
-        $code .= sprintf('var month = data.get(%s);', json_encode($monthParam));
-        $code .= sprintf('var year = data.get(%s);', json_encode($yearParam));
-        $code .= 'var date = new Date(year, month, 0);';
-        $code .= 'days.innerHTML = \'\';';
-        $code .= 'var num = date.getDate(); while (num--) {';
-        $code .= 'var option = document.createElement(\'option\');';
-        $code .= 'option.value = num + 1;';
-        $code .= 'option.textContent = num + 1;';
-        $code .= 'option.selected = num === 0;';
-        $code .= 'days.insertBefore(option, days.firstChild);';
-        $code .= '}';
-        $code .= '}';
-        $code .= '}';
+        return $this->Form->create($context, $options + [
+            'type' => 'GET',
+            'is' => 'calendar-filters',
+            'day-param' => $this->getConfig('dayParam'),
+            'month-param' => $this->getConfig('monthParam'),
+            'year-param' => $this->getConfig('yearParam'),
+        ]);
+    }
 
-        return $code;
+    /**
+     * Closes the filters form.
+     *
+     * @return string A closing FORM tag.
+     */
+    public function closeFiltersForm()
+    {
+        return $this->Form->end();
     }
 
     /**
@@ -251,7 +250,6 @@ class CalendarHelper extends DateRangesHelper
             'label' => '',
             'type' => 'select',
             'options' => $this->getMonths(),
-            'onchange' => $this->onDateChangeScript(),
             'value' => $date->month,
         ] + $options);
     }
@@ -271,7 +269,6 @@ class CalendarHelper extends DateRangesHelper
             'label' => '',
             'type' => 'select',
             'options' => $this->getYears($start, $end),
-            'onchange' => $this->onDateChangeScript(),
             'value' => $date->year,
         ] + $options);
     }
