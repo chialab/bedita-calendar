@@ -1,9 +1,9 @@
 <?php
 namespace Chialab\Calendar\Test\TestCase\View\Helper;
 
-use Chialab\Calendar\View\Helper\CalendarHelper;
 use Cake\TestSuite\TestCase;
 use Cake\View\View;
+use Chialab\Calendar\View\Helper\CalendarHelper;
 
 /**
  * Chialab\Calendar\View\Helper\CalendarHelper Test Case
