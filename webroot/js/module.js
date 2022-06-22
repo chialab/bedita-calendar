@@ -1,4 +1,4 @@
 import * as DNA from '@chialab/dna'
-import { defineCalendarFilters } from './Components/CalendarFilters.js'
+import { defineCalendarFilters } from './CalendarFilters.js'
 
 export const CalendarFilters = defineCalendarFilters(DNA);

@@ -67,7 +67,7 @@ export function defineCalendarFilters(DNA) {
                 days.insertBefore(option, days.firstChild);
             }
         };
-    }
+    };
 
     customElements.define('calendar-filters', CalendarFilters, {
         extends: 'form',
