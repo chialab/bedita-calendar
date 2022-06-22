@@ -1,11 +1,11 @@
 {
     "name": "@chialab/bedita-calendar",
     "version": "1.0.0",
-    "main": "resources/index.js",
-    "module": "resources/index.js",
+    "main": "webroot/js/module.js",
+    "module": "webroot/js/module.js",
     "exports": {
         ".": {
-            "default": "./resources/index.js"
+            "default": "./webroot/js/module.js"
         }
     },
     "repository": "git@github.com:chialab/bedita-calendar.git",
