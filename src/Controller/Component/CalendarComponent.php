@@ -11,6 +11,7 @@ use Cake\I18n\FrozenDate;
 use Cake\I18n\FrozenTime;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
+use Chialab\Calendar\RelativeDatesTrait;
 use InvalidArgumentException;
 
 /**
@@ -20,6 +21,8 @@ use InvalidArgumentException;
  */
 class CalendarComponent extends Component
 {
+    use RelativeDatesTrait;
+
     /**
      * {@inheritDoc}
      */
@@ -45,17 +48,17 @@ class CalendarComponent extends Component
      *
      * @param \Cake\ORM\Table $dateRanges Date ranges table instance.
      * @param \Cake\I18n\FrozenTime $from From.
-     * @param \Cake\I18n\FrozenTime $to To.
+     * @param \Cake\I18n\FrozenTime|null $to To.
      * @return \Cake\ORM\Query
      */
-    protected function getDateBoundariesSubQuery(Table $dateRanges, FrozenTime $from, FrozenTime $to): Query
+    protected function getDateBoundariesSubQuery(Table $dateRanges, FrozenTime $from, ?FrozenTime $to): Query
     {
         $query = $dateRanges->find();
 
         return $query
             ->find('dateRanges', [
                 'from_date' => $from->toIso8601String(),
-                'to_date' => $to->toIso8601String(),
+                'to_date' => $to !== null ? $to->toIso8601String() : null,
             ])
             ->select([
                 'object_id' => $dateRanges->aliasField('object_id'),
@@ -76,11 +79,11 @@ class CalendarComponent extends Component
      *
      * @param \Cake\ORM\Query $query Query object.
      * @param \Cake\I18n\FrozenTime $from Range start.
-     * @param \Cake\I18n\FrozenTime $to Range end.
+     * @param \Cake\I18n\FrozenTime|null $to Range end.
      * @return \Cake\ORM\Query
      * @throws \InvalidArgumentException Throws an exception when the table being queried is not linked with DateRanges.
      */
-    public function findInRange(Query $query, FrozenTime $from, FrozenTime $to): Query
+    public function findInRange(Query $query, FrozenTime $from, ?FrozenTime $to = null): Query
     {
         /** @var \Cake\ORM\Table */
         $table = $query->getRepository();
@@ -162,75 +165,5 @@ class CalendarComponent extends Component
             $from,
             $to,
         );
-    }
-
-    /**
-     * Create `from` and `to` values for "today".
-     *
-     * @param bool $fullDay Return the full day or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
-     */
-    public function today(bool $fullDay = true): array
-    {
-        $now = FrozenTime::now();
-
-        return [$fullDay ? $now->startOfDay() : $now, $now->endOfDay()];
-    }
-
-    /**
-     * Create `from` and `to` values for "tomorrow".
-     *
-     * @return \Cake\I18n\FrozenTime[]
-     */
-    public function tomorrow(): array
-    {
-        $tomorrow = FrozenTime::tomorrow();
-
-        return [$tomorrow->startOfDay(), $tomorrow->endOfDay()];
-    }
-
-    /**
-     * Create `from` and `to` values for the current week.
-     *
-     * @param bool $fullWeek Return the full week range or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
-     */
-    public function thisWeek(bool $fullWeek = true): array
-    {
-        $now = FrozenTime::now();
-
-        return [$fullWeek ? $now->startOfWeek() : $now, $now->endOfWeek()];
-    }
-
-    /**
-     * Create `from` and `to` values for the current weekend.
-     *
-     * @param bool $fullWeekend Return the full weekend range or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
-     */
-    public function thisWeekend(bool $fullWeekend = true): array
-    {
-        $now = FrozenTime::now();
-        switch ($now->dayOfWeek) {
-            case FrozenTime::SATURDAY:
-                return [$fullWeekend ? $now->startOfDay() : $now, $now->addDay()->endOfDay()];
-            case FrozenTime::SUNDAY:
-                return [$fullWeekend ? $now->subDay()->startOfDay() : $now, $now->endOfDay()];
-            default:
-                return [$now->next(FrozenTime::SATURDAY)->startOfDay(), $now->next(FrozenTime::SUNDAY)->endOfDay()];
-        }
-    }
-
-    /**
-     * Create `from` and `to` values for the current month.
-     *
-     * @param bool $fullMonth Return the full month range or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
-     */
-    public function thisMonth(bool $fullMonth = true): array
-    {
-        $now = FrozenTime::now();
-
-        return [$fullMonth ? $now->startOfMonth() : $now, $now->endOfMonth()];
     }
 }

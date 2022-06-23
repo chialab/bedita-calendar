@@ -6,7 +6,10 @@ namespace Chialab\Calendar\View\Helper;
 use BEdita\Core\Model\Entity\Category;
 use BEdita\Core\Model\Entity\Tag;
 use Cake\I18n\FrozenTime;
+use Cake\Utility\Hash;
+use Chialab\Calendar\RelativeDatesTrait;
 use Chialab\FrontendKit\View\Helper\DateRangesHelper;
+use DateTimeInterface;
 
 /**
  * Calendar helper
@@ -17,6 +20,8 @@ use Chialab\FrontendKit\View\Helper\DateRangesHelper;
  */
 class CalendarHelper extends DateRangesHelper
 {
+    use RelativeDatesTrait;
+
     /**
      * @inheritdoc
      */
@@ -31,6 +36,7 @@ class CalendarHelper extends DateRangesHelper
         'searchParam' => 'q',
         'categoryParam' => 'category',
         'tagParam' => 'tag',
+        'dateParam' => 'date',
         'dayParam' => 'day',
         'monthParam' => 'month',
         'yearParam' => 'year',
@@ -99,16 +105,20 @@ class CalendarHelper extends DateRangesHelper
      */
     public function getDate(): FrozenTime
     {
+        $dateParam = $this->getConfig('dateParam');
+        $request = $this->_View->getRequest();
+        if ($request->getQuery($dateParam)) {
+            return new FrozenTime($request->getQuery($dateParam));
+        }
+
         $dayParam = $this->getConfig('dayParam');
         $monthParam = $this->getConfig('monthParam');
         $yearParam = $this->getConfig('yearParam');
-        $request = $this->_View->getRequest();
-
-        if ($request->getQuery($monthParam) === null || $request->getQuery($yearParam) === null) {
-            return FrozenTime::now();
+        if ($request->getQuery($monthParam) !== null && $request->getQuery($yearParam) !== null) {
+            return FrozenTime::create($request->getQuery($yearParam), $request->getQuery($monthParam), $request->getQuery($dayParam) ?? 1, 0, 0, 0);
         }
 
-        return FrozenTime::create($request->getQuery($yearParam), $request->getQuery($monthParam), $request->getQuery($dayParam) ?? 1, 0, 0, 0);
+        return FrozenTime::now();
     }
 
     /**
@@ -124,48 +134,60 @@ class CalendarHelper extends DateRangesHelper
     }
 
     /**
-     * Generate an url to a day in the calendar.
-     * It accept absolute and relative dates eg "+1 month" "2022-04-25" "-7 days"
+     * Get the request categories list, if available.
      *
-     * @param mixed $date The absolute or relative date.
-     * @param array $options Link options.
-     * @return string The url to the calendar date.
+     * @return string|null
      */
-    public function url($date, array $options = [])
+    public function getCategories(): array
     {
-        $dayParam = $this->getConfig('dayParam');
-        $monthParam = $this->getConfig('monthParam');
-        $yearParam = $this->getConfig('yearParam');
-        $query = array_merge($options['?'] ?? [], [
-            $dayParam => $date->day,
-            $monthParam => $date->month,
-            $yearParam => $date->year,
-        ]);
+        $request = $this->_View->getRequest();
 
-        return $this->Url->build(['?' => $query] + $options);
+        return $request->getQuery($this->getConfig('categoryParam')) ?? [];
     }
 
     /**
-     * Generate a link to a day in the calendar.
-     * It accept absolute and relative dates eg "+1 month" "2022-04-25" "-7 days"
+     * Get the request tags list, if available.
      *
-     * @param string $title Link title.
-     * @param mixed $date The absolute or relative date.
-     * @param array $options Link options.
-     * @return string The anchor element with a link to the calendar date.
+     * @return string|null
      */
-    public function link(string $title, $date, array $options = []): string
+    public function getTags(): array
     {
-        $dayParam = $this->getConfig('dayParam');
-        $monthParam = $this->getConfig('monthParam');
-        $yearParam = $this->getConfig('yearParam');
-        $query = array_merge($options['?'] ?? [], [
-            $dayParam => $date->day,
-            $monthParam => $date->month,
-            $yearParam => $date->year,
-        ]);
+        $request = $this->_View->getRequest();
 
-        return $this->Html->link($title, ['?' => $query] + $options);
+        return $request->getQuery($this->getConfig('tagParam')) ?? [];
+    }
+
+    /**
+     * Generate url query params for calendar filter.
+     *
+     * @param mixed $date The absolute or relative date.
+     * @return array List of query params.
+     */
+    public function getFilterParams($date): array
+    {
+        $categoryParam = $this->getConfig('categoryParam');
+        $tagParam = $this->getConfig('tagParam');
+        $searchParam = $this->getConfig('searchParamParam');
+        $dateParam = $this->getConfig('dateParam');
+
+        $formatDate = function ($date) use (&$formatDate) {
+            if (is_array($date)) {
+                return array_map($formatDate, $date);
+            }
+
+            if ($date instanceof DateTimeInterface) {
+                return $date->format('Y-m-d');
+            }
+
+            return $date;
+        };
+
+        return [
+            $dateParam => $formatDate($date),
+            $searchParam => $this->getSearchText(),
+            $categoryParam => $this->getCategories(),
+            $tagParam => $this->getTags(),
+        ];
     }
 
     /**
@@ -187,6 +209,8 @@ class CalendarHelper extends DateRangesHelper
             'day-param' => $this->getConfig('dayParam'),
             'month-param' => $this->getConfig('monthParam'),
             'year-param' => $this->getConfig('yearParam'),
+            'category-param' => $this->getConfig('categoryParam'),
+            'tag-param' => $this->getConfig('tagParam'),
         ]);
     }
 
@@ -295,6 +319,9 @@ class CalendarHelper extends DateRangesHelper
             'value' => $category->name,
             'checked' => in_array($category->name, $value),
             'hiddenField' => false,
+            'templates' => [
+                'nestingLabel' => '{{input}}<label{{attrs}}>{{text}}</label>',
+            ],
         ] + $options);
     }
 
@@ -320,7 +347,41 @@ class CalendarHelper extends DateRangesHelper
             'value' => $tag->name,
             'checked' => in_array($tag->name, $value),
             'hiddenField' => false,
+            'templates' => [
+                'nestingLabel' => '{{input}}<label{{attrs}}>{{text}}</label>',
+            ],
         ] + $options);
+    }
+
+    /**
+     * Generate a radio control for time range filtering.
+     *
+     * @param array $ranges Time ranges.
+     * @param array|null $options Options for the radio group.
+     * @param array|null $attrs Options for the radio element.
+     * @return string The radio element.
+     */
+    public function rangeControl(array $ranges, $options = null, $attrs = null): string
+    {
+        $options = $options ?? [];
+        $attrs = $attrs ?? [];
+        $ranges = Hash::normalize($ranges);
+
+        $dateParam = $this->getConfig('dateParam');
+        $request = $this->_View->getRequest();
+        $value = $request->getQuery($dateParam);
+
+        return $this->Form->control($dateParam, [
+            'type' => 'radio',
+            'options' => $ranges,
+            'value' => $value,
+            'checked' => $value,
+            'label' => false,
+            'hiddenField' => false,
+            'templates' => [
+                'nestingLabel' => '{{hidden}}{{input}}<label{{attrs}}>{{text}}</label>',
+            ],
+        ] + $options, $attrs);
     }
 
     /**
@@ -335,6 +396,7 @@ class CalendarHelper extends DateRangesHelper
         $searchParam = $this->getConfig('searchParam');
         $categoryParam = $this->getConfig('categoryParam');
         $tagParam = $this->getConfig('tagParam');
+        $dateParam = $this->getConfig('dateParam');
         $dayParam = $this->getConfig('dayParam');
         $monthParam = $this->getConfig('monthParam');
         $yearParam = $this->getConfig('yearParam');
@@ -345,6 +407,7 @@ class CalendarHelper extends DateRangesHelper
             $searchParam => null,
             $categoryParam => null,
             $tagParam => null,
+            $dateParam => null,
             $dayParam => null,
             $monthParam => null,
             $yearParam => null,
@@ -354,68 +417,5 @@ class CalendarHelper extends DateRangesHelper
         }
 
         return $this->Html->link($title, $url, $options);
-    }
-
-    /**
-     * Extract a list of available time filters.
-     *
-     * @param \BEdita\Core\Model\Entity\ObjectEntity[] $objects Result set of objects.
-     * @return array A list of time filters.
-     */
-    public function extractTimeFilters($objects): array
-    {
-        $occurencies = [
-            'today' => 0,
-            'tomorrow' => 0,
-            'this-week' => 0,
-            'this-weekend' => 0,
-            'this-month' => 0,
-        ];
-
-        $filters = [
-            'today' => fn (FrozenTime $date) => $date->isToday(),
-            'tomorrow' => fn (FrozenTime $date) => $date->isTomorrow(),
-            'this-week' => fn (FrozenTime $date) => $date->isThisWeek(),
-            'this-weekend' => fn (FrozenTime $date) => $date->isWeekend(),
-            'this-month' => fn (FrozenTime $date) => $date->isThisMonth(),
-        ];
-
-        $labels = [
-            'today' => __('today'),
-            'tomorrow' => __('tomorrow'),
-            'this-week' => __('this week'),
-            'this-weekend' => __('this weekend'),
-            'this-month' => __('this month'),
-        ];
-
-        foreach ($objects as $object) {
-            if (empty($object->date_ranges)) {
-                continue;
-            }
-
-            foreach ($filters as $key => $filter) {
-                foreach ($object->date_ranges as $range) {
-                    $startDate = (new FrozenTime($range->start_date))->startOfDay();
-                    $endDate = (new FrozenTime($range->end_date ?? $range->start_date))->endOfDay();
-
-                    while ($startDate->lte($endDate)) {
-                        if ($filter($startDate)) {
-                            $occurencies[$key]++;
-                            break 2;
-                        }
-
-                        $startDate = $startDate->addDay();
-                    }
-                }
-            }
-        }
-
-        $total = count($objects);
-
-        return array_filter(
-            $labels,
-            fn ($key) => ($occurencies[$key] > 0 && $occurencies[$key] < $total),
-            ARRAY_FILTER_USE_KEY
-        );
     }
 }
