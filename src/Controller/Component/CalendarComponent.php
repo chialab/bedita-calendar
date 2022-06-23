@@ -24,9 +24,245 @@ class CalendarComponent extends Component
     use RelativeDatesTrait;
 
     /**
+     * The name of the view var set by the component.
+     *
+     * @var string
+     */
+    const VIEW_PARAMS = '_calendar';
+
+    /**
      * {@inheritDoc}
      */
     public $components = ['Chialab/FrontendKit.Objects'];
+
+    /**
+     * Search text filter.
+     *
+     * @var string|null
+     */
+    protected ?string $searchFilter = null;
+
+    /**
+     * Categories list filter.
+     *
+     * @var string[]
+     */
+    protected array $categoriesFilter = [];
+
+    /**
+     * Tags list filter.
+     *
+     * @var string[]
+     */
+    protected array $tagsFilter = [];
+
+    /**
+     * Date filter.
+     *
+     * @var mixed
+     */
+    protected $dateFilter = null;
+
+    /**
+     * Default configuration.
+     *
+     * @var array
+     */
+    protected $_defaultConfig = [
+        'params' => [
+            'search' => 'q',
+            'categories' => 'categories',
+            'tags' => 'tags',
+            'date' => 'date',
+            'day' => 'day',
+            'month' => 'month',
+            'year' => 'year',
+        ],
+    ];
+
+    /**
+     * Events supported by this component.
+     *
+     * @return array
+     */
+    public function implementedEvents()
+    {
+        return [
+            'Controller.beforeRender' => 'beforeRender',
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function initialize(array $config)
+    {
+        parent::initialize($config);
+
+        $request = $this->getController()->getRequest();
+
+        if (!empty($this->getConfig('params.search'))) {
+            $this->searchFilter = $request->getQuery($this->getConfig('params.search'));
+        }
+        if (!empty($this->getConfig('params.categories'))) {
+            $this->categoriesFilter = $request->getQuery($this->getConfig('params.categories')) ?? [];
+        }
+        if (!empty($this->getConfig('params.tags'))) {
+            $this->tagsFilter = $request->getQuery($this->getConfig('params.tags')) ?? [];
+        }
+        if (!empty($this->getConfig('params.date'))) {
+            $this->dateFilter = $request->getQuery($this->getConfig('params.date'));
+        }
+    }
+
+    /**
+     * Set calendar view variable.
+     *
+     * @return void
+     */
+    public function beforeRender()
+    {
+        $this->getController()->set(static::VIEW_PARAMS, [
+            'date' => $this->getDateFilter(),
+            'range' => $this->getRangeFilter(),
+            'search' => $this->getSearchFilter(),
+            'categories' => $this->getCategoriesFilter(),
+            'tags' => $this->getTagsFilter(),
+            'params' => $this->getConfig('params'),
+        ]);
+    }
+
+    /**
+     * Get the request search text filter.
+     *
+     * @return string|null
+     */
+    public function getSearchFilter(): ?string
+    {
+        return $this->searchFilter;
+    }
+
+    /**
+     * Set the request search text filter.
+     *
+     * @param string|null $value The value to set.
+     * @return void
+     */
+    public function setSearchFilter(?string $value): void
+    {
+        $this->searchFilter = $value;
+    }
+
+    /**
+     * Get the categories list filter.
+     *
+     * @return array
+     */
+    public function getCategoriesFilter(): array
+    {
+        return $this->categoriesFilter;
+    }
+
+    /**
+     * Set the categories list filter.
+     *
+     * @param string[] $categories Categories filter.
+     * @return void
+     */
+    public function setCategoriesFilter(array $categories): void
+    {
+        $this->categoriesFilter = $categories;
+    }
+
+    /**
+     * Get the tags list filter.
+     *
+     * @return array
+     */
+    public function getTagsFilter(): array
+    {
+        return $this->tagsFilter;
+    }
+
+    /**
+     * Set the tags list filter.
+     *
+     * @param string[] $tags Tags filter.
+     * @return void
+     */
+    public function setTagsFilter(array $tags): void
+    {
+        $this->tagsFilter = $tags;
+    }
+
+    /**
+     * Get the date filter.
+     *
+     * @return mixed
+     */
+    public function getDateFilter()
+    {
+        return $this->dateFilter;
+    }
+
+    /**
+     * Set the tags list filter.
+     *
+     * @param mixed $date Date filter.
+     * @return void
+     */
+    public function setDateFilter($date): void
+    {
+        $this->dateFilter = $date;
+    }
+
+    /**
+     * Get the date range filter.
+     *
+     * @return array
+     */
+    public function getRangeFilter(): array
+    {
+        // Filter by date.
+        [$startDate, $endDate] = [new FrozenTime(), null];
+        $date = $this->getDateFilter();
+        if (empty($date)) {
+            $request = $this->getController()->getRequest();
+            $day = filter_var($request->getQuery($this->getConfig('params.day')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+            $month = filter_var($request->getQuery($this->getConfig('params.month')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+            $year = filter_var($request->getQuery($this->getConfig('params.year')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+
+            if (!empty($month) && !empty($year)) {
+                $startDate = FrozenTime::create($year, $month, $day ?? 1);
+                $endDate = $startDate->addDays(30);
+            }
+        } elseif (is_array($date)) {
+            $startDate = new FrozenTime($date[0] ?? 'now');
+            $endDate = !empty($date[1]) ? new FrozenTime($date[1]) : null;
+        } else {
+            switch ($date) {
+                case 'today':
+                    [$startDate, $endDate] = $this->today();
+                    break;
+                case 'tomorrow':
+                    [$startDate, $endDate] = $this->tomorrow();
+                    break;
+                case 'this-week':
+                    [$startDate, $endDate] = $this->thisWeek();
+                    break;
+                case 'this-weekend':
+                    [$startDate, $endDate] = $this->thisWeekend();
+                    break;
+                case 'this-month':
+                    [$startDate, $endDate] = $this->thisMonth();
+                    break;
+                default:
+                    $startDate = new FrozenTime($date);
+            }
+        }
+
+        return [$startDate->startOfDay(), $endDate !== null ? $endDate->endOfDay() : null];
+    }
 
     /**
      * An array of i18n months names, useful for building a select input.

@@ -24,15 +24,15 @@ export function defineCalendarFilters(DNA) {
                     attribute: 'year-param',
                     defaultValue: 'year',
                 },
-                categoryParam: {
+                categoriesParam: {
                     type: String,
-                    attribute: 'category-param',
-                    defaultValue: 'category',
+                    attribute: 'categories-param',
+                    defaultValue: 'categories',
                 },
-                tagParam: {
+                tagsParam: {
                     type: String,
-                    attribute: 'tag-param',
-                    defaultValue: 'tag',
+                    attribute: 'tags-param',
+                    defaultValue: 'tags',
                 },
                 categories: {
                     type: Array,
@@ -104,8 +104,8 @@ export function defineCalendarFilters(DNA) {
 
         updateState() {
             const data = new FormData(this);
-            this.categories = data.getAll(`${this.categoryParam}[]`);
-            this.tags = data.getAll(`${this.tagParam}[]`);
+            this.categories = data.getAll(`${this.categoriesParam}[]`);
+            this.tags = data.getAll(`${this.tagsParam}[]`);
         }
 
         onClick = (event) => {
@@ -130,40 +130,18 @@ export function defineCalendarFilters(DNA) {
 
             const name = target.getAttribute('name');
             switch (name) {
+                case this.dateParam:
+                case this.dayParam:
                 case this.monthParam:
                 case this.yearParam:
-                    return this.updateDateFilter();
-                case this.dateParam:
-                case this.categoryParam:
-                case this.tagParam:
-                case `${this.categoryParam}[]`:
-                case `${this.tagParam}[]`:
+                case this.categoriesParam:
+                case this.tagsParam:
+                case `${this.categoriesParam}[]`:
+                case `${this.tagsParam}[]`:
                     this.updateState();
                     return this.requestSubmit();
             }
         };
-
-        updateDateFilter() {
-            const days = this.querySelector(`[name="${this.dayParam}"]`);
-            if (!days) {
-                return;
-            }
-
-            const data = new FormData(this);
-            const month = data.get(this.monthParam);
-            const year = data.get(this.yearParam);
-            const date = new Date(year, month, 0);
-
-            days.innerHTML = '';
-            let num = date.getDate();
-            while (num--) {
-                const option = this.ownerDocument.createElement('option');
-                option.value = num + 1;
-                option.textContent = num + 1;
-                option.selected = num === 0;
-                days.insertBefore(option, days.firstChild);
-            }
-        }
     };
 
     customElements.define('calendar-filters', CalendarFilters, {
