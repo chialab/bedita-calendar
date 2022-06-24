@@ -1,5 +1,5 @@
 {
-    "name": "@chialab/bedita-calendar",
+    "name": "@chialab/calendar",
     "version": "1.0.0",
     "main": "webroot/js/module.js",
     "module": "webroot/js/module.js",
