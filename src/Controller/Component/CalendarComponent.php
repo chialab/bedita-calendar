@@ -524,21 +524,4 @@ class CalendarComponent extends Component
                 return collection($grouped);
             });
     }
-
-    /**
-     * Load calendar items from a folder.
-     *
-     * @param string $parent The parent folder uname.
-     * @param \Cake\I18n\FrozenTime $from Range start.
-     * @param \Cake\I18n\FrozenTime|null $to Range end.
-     * @return \Cake\ORM\Query
-     */
-    public function calendarFolder(string $parent, FrozenTime $from, ?FrozenTime $to): Query
-    {
-        return $this->findGroupedByDay(
-            $this->Objects->loadObjects(['parent' => $parent], 'objects'),
-            $from,
-            $to,
-        );
-    }
 }
