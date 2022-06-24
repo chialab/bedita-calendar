@@ -180,7 +180,6 @@ class CalendarHelper extends DateRangesHelper
         return $this->getFilter('tags');
     }
 
-
     /**
      * Get the search text filter.
      *
