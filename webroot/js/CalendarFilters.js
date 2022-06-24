@@ -9,6 +9,21 @@ export function defineCalendarFilters(DNA) {
                     attribute: 'date-param',
                     defaultValue: 'date',
                 },
+                rangeParam: {
+                    type: String,
+                    attribute: 'range-param',
+                    defaultValue: 'range',
+                },
+                categoriesParam: {
+                    type: String,
+                    attribute: 'categories-param',
+                    defaultValue: 'categories',
+                },
+                tagsParam: {
+                    type: String,
+                    attribute: 'tags-param',
+                    defaultValue: 'tags',
+                },
                 dayParam: {
                     type: String,
                     attribute: 'day-param',
@@ -23,16 +38,6 @@ export function defineCalendarFilters(DNA) {
                     type: String,
                     attribute: 'year-param',
                     defaultValue: 'year',
-                },
-                categoriesParam: {
-                    type: String,
-                    attribute: 'categories-param',
-                    defaultValue: 'categories',
-                },
-                tagsParam: {
-                    type: String,
-                    attribute: 'tags-param',
-                    defaultValue: 'tags',
                 },
                 categories: {
                     type: Array,
@@ -130,10 +135,11 @@ export function defineCalendarFilters(DNA) {
 
             const name = target.getAttribute('name');
             switch (name) {
-                case this.dateParam:
-                case this.dayParam:
                 case this.monthParam:
                 case this.yearParam:
+                    return this.updateDateFilter();
+                case this.dateParam:
+                case this.rangeParam:
                 case this.categoriesParam:
                 case this.tagsParam:
                 case `${this.categoriesParam}[]`:
@@ -142,6 +148,28 @@ export function defineCalendarFilters(DNA) {
                     return this.requestSubmit();
             }
         };
+
+        updateDateFilter() {
+            const days = this.querySelector(`[name="${this.dayParam}"]`);
+            if (!days) {
+                return;
+            }
+
+            const data = new FormData(this);
+            const month = data.get(this.monthParam);
+            const year = data.get(this.yearParam);
+            const date = new Date(year, month, 0);
+
+            days.innerHTML = '';
+            let num = date.getDate();
+            while (num--) {
+                const option = this.ownerDocument.createElement('option');
+                option.value = num + 1;
+                option.textContent = num + 1;
+                option.selected = num === 0;
+                days.insertBefore(option, days.firstChild);
+            }
+        }
     };
 
     customElements.define('calendar-filters', CalendarFilters, {

@@ -36,11 +36,18 @@ class CalendarComponent extends Component
     public $components = ['Chialab/FrontendKit.Objects'];
 
     /**
-     * Search text filter.
+     * Date filter.
+     *
+     * @var \Cake\I18n\FrozenTime|null
+     */
+    protected ?FrozenTime $dateFilter = null;
+
+    /**
+     * Range filter.
      *
      * @var string|null
      */
-    protected ?string $searchFilter = null;
+    protected ?string $rangeFilter = null;
 
     /**
      * Categories list filter.
@@ -57,11 +64,32 @@ class CalendarComponent extends Component
     protected array $tagsFilter = [];
 
     /**
-     * Date filter.
+     * Search text filter.
      *
-     * @var mixed
+     * @var string|null
      */
-    protected $dateFilter = null;
+    protected ?string $searchFilter = null;
+
+    /**
+     * Day filter.
+     *
+     * @var int|null
+     */
+    protected ?int $dayFilter = null;
+
+    /**
+     * Month filter.
+     *
+     * @var int|null
+     */
+    protected ?int $monthFilter = null;
+
+    /**
+     * Year filter.
+     *
+     * @var int|null
+     */
+    protected ?int $yearFilter = null;
 
     /**
      * Default configuration.
@@ -70,10 +98,11 @@ class CalendarComponent extends Component
      */
     protected $_defaultConfig = [
         'params' => [
-            'search' => 'q',
+            'date' => 'date',
+            'range' => 'range',
             'categories' => 'categories',
             'tags' => 'tags',
-            'date' => 'date',
+            'search' => 'q',
             'day' => 'day',
             'month' => 'month',
             'year' => 'year',
@@ -101,17 +130,30 @@ class CalendarComponent extends Component
 
         $request = $this->getController()->getRequest();
 
-        if (!empty($this->getConfig('params.search'))) {
-            $this->searchFilter = $request->getQuery($this->getConfig('params.search'));
+        if (!empty($this->getConfig('params.date'))) {
+            $date = $request->getQuery($this->getConfig('params.date'));
+            $this->setDateFilter($date ? new FrozenTime($date) : null);
+        }
+        if (!empty($this->getConfig('params.range'))) {
+            $this->setRangeFilter($request->getQuery($this->getConfig('params.range')));
         }
         if (!empty($this->getConfig('params.categories'))) {
-            $this->categoriesFilter = $request->getQuery($this->getConfig('params.categories')) ?? [];
+            $this->setCategoriesFilter($request->getQuery($this->getConfig('params.categories')) ?? []);
         }
         if (!empty($this->getConfig('params.tags'))) {
-            $this->tagsFilter = $request->getQuery($this->getConfig('params.tags')) ?? [];
+            $this->setTagsFilter($request->getQuery($this->getConfig('params.tags')) ?? []);
         }
-        if (!empty($this->getConfig('params.date'))) {
-            $this->dateFilter = $request->getQuery($this->getConfig('params.date'));
+        if (!empty($this->getConfig('params.search'))) {
+            $this->setSearchFilter($request->getQuery($this->getConfig('params.search')));
+        }
+        if (!empty($this->getConfig('params.day'))) {
+            $this->setDayFilter(filter_var($request->getQuery($this->getConfig('params.day')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE));
+        }
+        if (!empty($this->getConfig('params.month'))) {
+            $this->setMonthFilter(filter_var($request->getQuery($this->getConfig('params.month')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE));
+        }
+        if (!empty($this->getConfig('params.year'))) {
+            $this->setYearFilter(filter_var($request->getQuery($this->getConfig('params.year')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE));
         }
     }
 
@@ -125,32 +167,57 @@ class CalendarComponent extends Component
         $this->getController()->set(static::VIEW_PARAMS, [
             'date' => $this->getDateFilter(),
             'range' => $this->getRangeFilter(),
-            'search' => $this->getSearchFilter(),
             'categories' => $this->getCategoriesFilter(),
             'tags' => $this->getTagsFilter(),
+            'search' => $this->getSearchFilter(),
+            'day' => $this->getDayFilter(),
+            'month' => $this->getMonthFilter(),
+            'year' => $this->getYearFilter(),
+            'computed' => $this->getComputedRange(),
             'params' => $this->getConfig('params'),
         ]);
     }
 
     /**
-     * Get the request search text filter.
+     * Get the range filter.
      *
-     * @return string|null
+     * @return \Cake\I18n\FrozenTime|null
      */
-    public function getSearchFilter(): ?string
+    public function getDateFilter(): ?FrozenTime
     {
-        return $this->searchFilter;
+        return $this->dateFilter;
     }
 
     /**
-     * Set the request search text filter.
+     * Set the range filter.
      *
-     * @param string|null $value The value to set.
+     * @param \Cake\I18n\FrozenTime|null $date Date filter.
      * @return void
      */
-    public function setSearchFilter(?string $value): void
+    public function setDateFilter(?FrozenTime $date): void
     {
-        $this->searchFilter = $value;
+        $this->dateFilter = $date;
+    }
+
+    /**
+     * Get the range filter.
+     *
+     * @return string|null
+     */
+    public function getRangeFilter(): ?string
+    {
+        return $this->rangeFilter;
+    }
+
+    /**
+     * Set the range filter.
+     *
+     * @param string|null $date Date filter.
+     * @return void
+     */
+    public function setRangeFilter(?string $range): void
+    {
+        $this->rangeFilter = $range;
     }
 
     /**
@@ -196,72 +263,144 @@ class CalendarComponent extends Component
     }
 
     /**
-     * Get the date filter.
+     * Get the request search text filter.
      *
-     * @return mixed
+     * @return string|null
      */
-    public function getDateFilter()
+    public function getSearchFilter(): ?string
     {
-        return $this->dateFilter;
+        return $this->searchFilter;
     }
 
     /**
-     * Set the tags list filter.
+     * Set the request search text filter.
      *
-     * @param mixed $date Date filter.
+     * @param string|null $value The value to set.
      * @return void
      */
-    public function setDateFilter($date): void
+    public function setSearchFilter(?string $value): void
     {
-        $this->dateFilter = $date;
+        $this->searchFilter = $value;
     }
 
     /**
-     * Get the date range filter.
+     * Get the request day filter.
+     *
+     * @return int|null
+     */
+    public function getDayFilter(): ?int
+    {
+        return $this->dayFilter;
+    }
+
+    /**
+     * Set the request day filter.
+     *
+     * @param int|null $value The value to set.
+     * @return void
+     */
+    public function setDayFilter(?int $value): void
+    {
+        $this->dayFilter = $value;
+    }
+
+    /**
+     * Get the request month filter.
+     *
+     * @return int|null
+     */
+    public function getMonthFilter(): ?int
+    {
+        return $this->monthFilter;
+    }
+
+    /**
+     * Set the request month filter.
+     *
+     * @param int|null $value The value to set.
+     * @return void
+     */
+    public function setMonthFilter(?int $value): void
+    {
+        $this->monthFilter = $value;
+    }
+
+    /**
+     * Get the request year filter.
+     *
+     * @return int|null
+     */
+    public function getYearFilter(): ?int
+    {
+        return $this->yaerFilter;
+    }
+
+    /**
+     * Set the request year filter.
+     *
+     * @param int|null $value The value to set.
+     * @return void
+     */
+    public function setYearFilter(?int $value): void
+    {
+        $this->yaerFilter = $value;
+    }
+
+    /**
+     * Get the computed date range filter.
      *
      * @return array
      */
-    public function getRangeFilter(): array
+    public function getComputedRange(): array
     {
-        // Filter by date.
-        [$startDate, $endDate] = [new FrozenTime(), null];
-        $date = $this->getDateFilter();
-        if (empty($date)) {
-            $request = $this->getController()->getRequest();
-            $day = filter_var($request->getQuery($this->getConfig('params.day')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
-            $month = filter_var($request->getQuery($this->getConfig('params.month')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
-            $year = filter_var($request->getQuery($this->getConfig('params.year')), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+        if (!empty($this->getDateFilter())) {
+            return [$this->getDateFilter(), null];
+        }
 
-            if (!empty($month) && !empty($year)) {
-                $startDate = FrozenTime::create($year, $month, $day ?? 1);
-                $endDate = $startDate->addDays(30);
+        [$startDate, $endDate] = [new FrozenTime(), null];
+
+        if (!empty($this->getMonthFilter()) && !empty($this->getYearFilter())) {
+            $startDate = FrozenTime::create($this->getYearFilter(), $this->getMonthFilter(), $this->getDayFilter() ?? 1);
+            $endDate = $startDate->addDays(30);
+        }
+
+        $range = $this->getRangeFilter();
+        if (!empty($range)) {
+            [$rangeStartDate, $rangeEndDate] = [new FrozenTime(), null];
+            if (is_array($range)) {
+                $rangeStartDate = new FrozenTime($range[0] ?? 'now');
+                $rangeEndDate = !empty($range[1]) ? new FrozenTime($range[1]) : null;
+            } else {
+                switch ($range) {
+                    case 'today':
+                        [$rangeStartDate, $rangeEndDate] = $this->today();
+                        break;
+                    case 'tomorrow':
+                        [$rangeStartDate, $rangeEndDate] = $this->tomorrow();
+                        break;
+                    case 'this-week':
+                        [$rangeStartDate, $rangeEndDate] = $this->thisWeek();
+                        break;
+                    case 'this-weekend':
+                        [$rangeStartDate, $rangeEndDate] = $this->thisWeekend();
+                        break;
+                    case 'this-month':
+                        [$rangeStartDate, $rangeEndDate] = $this->thisMonth();
+                        break;
+                    default:
+                        $rangeStartDate = new FrozenTime($range);
+                }
             }
-        } elseif (is_array($date)) {
-            $startDate = new FrozenTime($date[0] ?? 'now');
-            $endDate = !empty($date[1]) ? new FrozenTime($date[1]) : null;
-        } else {
-            switch ($date) {
-                case 'today':
-                    [$startDate, $endDate] = $this->today();
-                    break;
-                case 'tomorrow':
-                    [$startDate, $endDate] = $this->tomorrow();
-                    break;
-                case 'this-week':
-                    [$startDate, $endDate] = $this->thisWeek();
-                    break;
-                case 'this-weekend':
-                    [$startDate, $endDate] = $this->thisWeekend();
-                    break;
-                case 'this-month':
-                    [$startDate, $endDate] = $this->thisMonth();
-                    break;
-                default:
-                    $startDate = new FrozenTime($date);
+
+            if ($rangeStartDate->gt($startDate)) {
+                $startDate = $rangeStartDate;
+            }
+            if (!$endDate || $rangeEndDate->lt($endDate)) {
+                $endDate = $rangeEndDate;
             }
         }
 
-        return [$startDate->startOfDay(), $endDate !== null ? $endDate->endOfDay() : null];
+        return [$startDate, $endDate];
     }
 
     /**

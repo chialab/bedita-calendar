@@ -121,23 +121,13 @@ class CalendarHelper extends DateRangesHelper
     }
 
     /**
-     * Get the calendar range filter.
-     *
-     * @return array
-     */
-    public function getRange(): array
-    {
-        return $this->getFilter('range');
-    }
-
-    /**
      * Get the calendar range start date.
      *
      * @return \Cake\I18n\FrozenTime
      */
     public function getStartDate(): FrozenTime
     {
-        return $this->getRange()[0];
+        return $this->getFilter('computed')[0];
     }
 
     /**
@@ -147,17 +137,27 @@ class CalendarHelper extends DateRangesHelper
      */
     public function getEndDate(): ?FrozenTime
     {
-        return $this->getRange()[1];
+        return $this->getFilter('computed')[1];
     }
 
     /**
-     * Get the search text filter.
+     * Get the date filter.
      *
-     * @return string|null
+     * @return array
      */
-    public function getSearchText(): ?string
+    public function getDateFilter(): array
     {
-        return $this->getFilter('search');
+        return $this->getFilter('date');
+    }
+
+    /**
+     * Get the range filter.
+     *
+     * @return array
+     */
+    public function getRangeFilter(): array
+    {
+        return $this->getFilter('range');
     }
 
     /**
@@ -165,7 +165,7 @@ class CalendarHelper extends DateRangesHelper
      *
      * @return string|null
      */
-    public function getCategories(): array
+    public function getCategoriesFilter(): array
     {
         return $this->getFilter('categories');
     }
@@ -175,9 +175,50 @@ class CalendarHelper extends DateRangesHelper
      *
      * @return string|null
      */
-    public function getTags(): array
+    public function getTagsFilter(): array
     {
         return $this->getFilter('tags');
+    }
+
+
+    /**
+     * Get the search text filter.
+     *
+     * @return string|null
+     */
+    public function getSearchFilter(): ?string
+    {
+        return $this->getFilter('search');
+    }
+
+    /**
+     * Get the day filter.
+     *
+     * @return int|null
+     */
+    public function getDayFilter(): ?int
+    {
+        return $this->getFilter('day');
+    }
+
+    /**
+     * Get the month filter.
+     *
+     * @return int|null
+     */
+    public function getMonthFilter(): ?int
+    {
+        return $this->getFilter('month');
+    }
+
+    /**
+     * Get the year filter.
+     *
+     * @return int|null
+     */
+    public function getYearFilter(): ?int
+    {
+        return $this->getFilter('year');
     }
 
     /**
@@ -202,9 +243,9 @@ class CalendarHelper extends DateRangesHelper
 
         return [
             $this->getFilterParam('date') => $formatDate($date),
-            $this->getFilterParam('search') => $this->getSearchText(),
-            $this->getFilterParam('categories') => $this->getCategories(),
-            $this->getFilterParam('tags') => $this->getTags(),
+            $this->getFilterParam('categories') => $this->getCategoriesFilter(),
+            $this->getFilterParam('tags') => $this->getTagsFilter(),
+            $this->getFilterParam('search') => $this->getSearchFilter(),
         ];
     }
 
@@ -225,11 +266,13 @@ class CalendarHelper extends DateRangesHelper
             'type' => 'GET',
             'is' => 'calendar-filters',
             'date-param' => $this->getFilterParam('date'),
+            'range-param' => $this->getFilterParam('range'),
+            'categories-param' => $this->getFilterParam('categories'),
+            'tags-param' => $this->getFilterParam('tags'),
+            'search-param' => $this->getFilterParam('search'),
             'day-param' => $this->getFilterParam('day'),
             'month-param' => $this->getFilterParam('month'),
             'year-param' => $this->getFilterParam('year'),
-            'categories-param' => $this->getFilterParam('categories'),
-            'tags-param' => $this->getFilterParam('tags'),
         ]);
     }
 
@@ -254,7 +297,7 @@ class CalendarHelper extends DateRangesHelper
         $options = $options ?? [];
 
         return $this->Form->text($this->getFilterParam('search'), [
-            'value' => $this->getSearchText(),
+            'value' => $this->getSearchFilter(),
         ] + $options);
     }
 
@@ -264,16 +307,19 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the select element.
      * @return string The <select> element.
      */
-    public function daysControl(?array $options = null): string
+    public function dayControl(?array $options = null): string
     {
         $options = $options ?? [];
-        $date = $this->getStartDate();
+        $date = FrozenTime::now();
 
         return $this->Form->control($this->getFilterParam('day'), [
             'label' => false,
             'type' => 'select',
-            'options' => $this->getDaysInMonth($date->year, $date->month),
-            'value' => $date->day,
+            'options' => $this->getDaysInMonth(
+                $this->getFilter('year') ?? $date->year,
+                $this->getFilter('month') ?? $date->month
+            ),
+            'value' => $this->getFilter('day') ?? FrozenTime::now()->day,
         ] + $options);
     }
 
@@ -283,7 +329,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the select element.
      * @return string The <select> element.
      */
-    public function monthsControl(?array $options = null): string
+    public function monthControl(?array $options = null): string
     {
         $options = $options ?? [];
 
@@ -291,7 +337,7 @@ class CalendarHelper extends DateRangesHelper
             'label' => '',
             'type' => 'select',
             'options' => $this->getMonths(),
-            'value' => $this->getStartDate()->month,
+            'value' => $this->getFilter('month') ?? FrozenTime::now()->month,
         ] + $options);
     }
 
@@ -301,7 +347,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the select element.
      * @return string The <select> element.
      */
-    public function yearsControl(?array $options = null, $start = '-2 years', $end = '+2 years'): string
+    public function yearControl(?array $options = null, $start = '-2 years', $end = '+2 years'): string
     {
         $options = $options ?? [];
 
@@ -309,25 +355,26 @@ class CalendarHelper extends DateRangesHelper
             'label' => '',
             'type' => 'select',
             'options' => $this->getYears($start, $end),
-            'value' => $this->getStartDate()->year,
+            'value' => $this->getFilter('year') ?? FrozenTime::now()->year,
         ] + $options);
     }
 
     /**
      * Generate a checkbox control for category filtering.
      *
+     * @param string $label The control label.
      * @param \BEdita\Core\Model\Entity\Category $category The category entity.
      * @param array|null $options Options for the checkbox element.
      * @return string The checkbox element.
      */
-    public function categoryControl(Category $category, ?array $options = null): string
+    public function categoryControl(string $label, Category $category, ?array $options = null): string
     {
         $options = $options ?? [];
 
         return $this->Form->control($this->getFilterParam('categories') . '[]', [
             'id' => sprintf('filter-category-%s', $category->name),
             'type' => 'checkbox',
-            'label' => $category->label ?? $category->name,
+            'label' => $label,
             'value' => $category->name,
             'checked' => in_array($category->name, $this->getFilter('categories') ?? []),
             'hiddenField' => false,
@@ -340,18 +387,19 @@ class CalendarHelper extends DateRangesHelper
     /**
      * Generate a checkbox control for tag filtering.
      *
+     * @param string $label The control label.
      * @param \BEdita\Core\Model\Entity\Tag $tag The tag entity.
      * @param array|null $options Options for the checkbox element.
      * @return string The checkbox element.
      */
-    public function tagControl(Tag $tag, ?array $options = null): string
+    public function tagControl(string $label, Tag $tag, ?array $options = null): string
     {
         $options = $options ?? [];
 
         return $this->Form->control($this->getFilterParam('tags') . '[]', [
             'id' => sprintf('filter-tag-%s', $tag->name),
             'type' => 'checkbox',
-            'label' => $tag->label ?? $tag->name,
+            'label' => $label,
             'value' => $tag->name,
             'checked' => in_array($tag->name, $this->getFilter('tags') ?? []),
             'hiddenField' => false,
@@ -375,10 +423,10 @@ class CalendarHelper extends DateRangesHelper
         $attrs = $attrs ?? [];
         $ranges = Hash::normalize($ranges);
 
-        return $this->Form->control($this->getFilterParam('date'), [
+        return $this->Form->control($this->getFilterParam('range'), [
             'type' => 'radio',
             'options' => $ranges,
-            'value' => $this->getFilter('date'),
+            'value' => $this->getFilter('range'),
             'label' => false,
             'hiddenField' => false,
             'templates' => [
@@ -396,7 +444,7 @@ class CalendarHelper extends DateRangesHelper
      */
     public function resetControl(string $title, $options = null): string
     {
-        $url = $this->_View->getRequest()->url;
+        $url = $this->_View->getRequest()->getPath();
         $query = $this->_View->getRequest()->getQueryParams();
         $params = [];
         foreach ($this->getFilterParams() as $param) {
