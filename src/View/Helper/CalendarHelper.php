@@ -29,31 +29,6 @@ class CalendarHelper extends DateRangesHelper
     public $helpers = ['Form', 'Html', 'Url'];
 
     /**
-     * Get a range of years.
-     * It can be used with absolute values, eg 2019 and 2022
-     * or relative values to the $from value, eg "-2 years" and "+2 years"
-     *
-     * @param int|string $startRange The initial value of the range, it can be absolute or relative.
-     * @param int|string $endRange The initial value of the range, it can be absolute or relative.
-     * @param \Cake\I18n\FrozenTime|string $from The start date for relative values.
-     * @return array
-     */
-    public function getYears($startRange, $endRange, $from = 'now'): array
-    {
-        if (is_int($startRange)) {
-            return range($startRange, $endRange);
-        }
-
-        $from = new FrozenTime($from);
-        $start = $from->modify($startRange)->year;
-        $end = $from->modify($endRange)->year;
-
-        $years = range($start, $end);
-
-        return array_combine($years, $years);
-    }
-
-    /**
      * An array of i18n months names, useful for building a select input.
      *
      * @return array
@@ -344,16 +319,27 @@ class CalendarHelper extends DateRangesHelper
      * Generate a <select> element for years.
      *
      * @param array|null $options Options for the select element.
+     * @param int|string|null $start The range start year.
+     * @param int|string|null $end The range end year.
      * @return string The <select> element.
      */
     public function yearControl(?array $options = null, $start = '-2 years', $end = '+2 years'): string
     {
         $options = $options ?? [];
 
+        if (is_string($start)) {
+            $start = FrozenTime::now()->modify($start)->year;
+        }
+        if (is_string($end)) {
+            $end = FrozenTime::now()->modify($end)->year;
+        }
+
+        $years = range($start, $end);
+
         return $this->Form->control($this->getFilterParam('year'), [
             'label' => '',
             'type' => 'select',
-            'options' => $this->getYears($start, $end),
+            'options' => array_combine($years, $years),
             'value' => $this->getFilter('year') ?? FrozenTime::now()->year,
         ] + $options);
     }
