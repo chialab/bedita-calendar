@@ -367,11 +367,11 @@ class CalendarHelper extends DateRangesHelper
     /**
      * Generate a reset link for the calendar view.
      *
-     * @param string $title The title of the link.
+     * @param string $label The label of the link.
      * @param array|null $options Options for the link element.
      * @return string The <a> element.
      */
-    public function resetControl(string $title, $options = null): string
+    public function resetControl(string $label, $options = null): string
     {
         $url = $this->_View->getRequest()->getPath();
         $query = $this->_View->getRequest()->getQueryParams();
@@ -385,6 +385,6 @@ class CalendarHelper extends DateRangesHelper
             $url = sprintf('%s?%s', $url, http_build_query($query));
         }
 
-        return $this->Html->link($title, $url, $options);
+        return $this->Html->link($label, $url, $options);
     }
 }
