@@ -118,11 +118,30 @@ class CalendarHelper extends DateRangesHelper
     /**
      * Generate url query params for calendar filter.
      *
-     * @param mixed $date The absolute or relative date.
+     * @param array $filters The filters to set.
+     * @param bool|null $keepActive Should preserve active filters.
      * @return array List of query params.
      */
-    public function getFilterQuery($date): array
+    public function generateFilters(array $filters, ?bool $keepActive = true)
     {
+        if ($keepActive) {
+            $filters += array_filter([
+                'categories' => $this->getFilter('categories'),
+                'tags' => $this->getFilter('tags'),
+                'search' => $this->getFilter('search'),
+            ]);
+
+            if (empty($filters['date']) && empty($filters['range']) && empty($filters['year'])) {
+                $filters += array_filter([
+                    'date' => $this->getFilter('date'),
+                    'range' => $this->getFilter('range'),
+                    'day' => $this->getFilter('day'),
+                    'month' => $this->getFilter('month'),
+                    'year' => $this->getFilter('year'),
+                ]);
+            }
+        }
+
         $formatDate = function ($date) use (&$formatDate) {
             if (is_array($date)) {
                 return array_map($formatDate, $date);
@@ -135,12 +154,17 @@ class CalendarHelper extends DateRangesHelper
             return $date;
         };
 
-        return [
-            $this->getFilterParam('date') => $formatDate($date),
-            $this->getFilterParam('categories') => $this->getFilter('categories'),
-            $this->getFilterParam('tags') => $this->getFilter('tags'),
-            $this->getFilterParam('search') => $this->getFilter('search'),
-        ];
+        $query = [];
+        foreach ($filters as $key => $value) {
+            switch ($key) {
+                case 'date':
+                    $value = $formatDate($value);
+                    break;
+            }
+            $query[$this->getFilterParam($key)] = $value;
+        }
+
+        return $query;
     }
 
     /**
