@@ -116,86 +116,6 @@ class CalendarHelper extends DateRangesHelper
     }
 
     /**
-     * Get the date filter.
-     *
-     * @return array
-     */
-    public function getDateFilter(): array
-    {
-        return $this->getFilter('date');
-    }
-
-    /**
-     * Get the range filter.
-     *
-     * @return array
-     */
-    public function getRangeFilter(): array
-    {
-        return $this->getFilter('range');
-    }
-
-    /**
-     * Get the categories list filter.
-     *
-     * @return string|null
-     */
-    public function getCategoriesFilter(): array
-    {
-        return $this->getFilter('categories');
-    }
-
-    /**
-     * Get the request tags list filter.
-     *
-     * @return string|null
-     */
-    public function getTagsFilter(): array
-    {
-        return $this->getFilter('tags');
-    }
-
-    /**
-     * Get the search text filter.
-     *
-     * @return string|null
-     */
-    public function getSearchFilter(): ?string
-    {
-        return $this->getFilter('search');
-    }
-
-    /**
-     * Get the day filter.
-     *
-     * @return int|null
-     */
-    public function getDayFilter(): ?int
-    {
-        return $this->getFilter('day');
-    }
-
-    /**
-     * Get the month filter.
-     *
-     * @return int|null
-     */
-    public function getMonthFilter(): ?int
-    {
-        return $this->getFilter('month');
-    }
-
-    /**
-     * Get the year filter.
-     *
-     * @return int|null
-     */
-    public function getYearFilter(): ?int
-    {
-        return $this->getFilter('year');
-    }
-
-    /**
      * Generate url query params for calendar filter.
      *
      * @param mixed $date The absolute or relative date.
@@ -217,9 +137,9 @@ class CalendarHelper extends DateRangesHelper
 
         return [
             $this->getFilterParam('date') => $formatDate($date),
-            $this->getFilterParam('categories') => $this->getCategoriesFilter(),
-            $this->getFilterParam('tags') => $this->getTagsFilter(),
-            $this->getFilterParam('search') => $this->getSearchFilter(),
+            $this->getFilterParam('categories') => $this->getFilter('categories'),
+            $this->getFilterParam('tags') => $this->getFilter('tags'),
+            $this->getFilterParam('search') => $this->getFilter('search'),
         ];
     }
 
@@ -271,7 +191,7 @@ class CalendarHelper extends DateRangesHelper
         $options = $options ?? [];
 
         return $this->Form->text($this->getFilterParam('search'), [
-            'value' => $this->getSearchFilter(),
+            'value' => $this->getFilter('search'),
         ] + $options);
     }
 
