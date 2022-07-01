@@ -378,14 +378,8 @@ class CalendarComponent extends Component
                     case 'tomorrow':
                         [$rangeStartDate, $rangeEndDate] = $this->tomorrow();
                         break;
-                    case 'next-7-days':
-                        [$rangeStartDate, $rangeEndDate] = $this->nextDays(7);
-                        break;
                     case 'this-weekend':
                         [$rangeStartDate, $rangeEndDate] = $this->thisWeekend();
-                        break;
-                    case 'next-30-days':
-                        [$rangeStartDate, $rangeEndDate] = $this->nextDays(30);
                         break;
                     default:
                         $rangeStartDate = new FrozenTime($range);

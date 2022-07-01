@@ -32,19 +32,6 @@ trait RelativeDatesTrait
     }
 
     /**
-     * Create `from` and `to` values the given number of days.
-     *
-     * @param int $days The number of days.
-     * @return \Cake\I18n\FrozenTime[]
-     */
-    public function nextDays(int $days): array
-    {
-        $now = FrozenTime::now();
-
-        return [$now, $now->addDays($days)];
-    }
-
-    /**
      * Create `from` and `to` values for the current weekend.
      *
      * @param bool $fullWeekend Return the full weekend range or just the remaining time.
