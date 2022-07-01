@@ -32,16 +32,16 @@ trait RelativeDatesTrait
     }
 
     /**
-     * Create `from` and `to` values for the current week.
+     * Create `from` and `to` values the given number of days.
      *
-     * @param bool $fullWeek Return the full week range or just the remaining time.
+     * @param int $days The number of days.
      * @return \Cake\I18n\FrozenTime[]
      */
-    public function thisWeek(bool $fullWeek = true): array
+    public function nextDays(int $days): array
     {
         $now = FrozenTime::now();
 
-        return [$fullWeek ? $now->startOfWeek() : $now, $now->endOfWeek()];
+        return [$now, $now->addDays($days)];
     }
 
     /**
@@ -61,18 +61,5 @@ trait RelativeDatesTrait
             default:
                 return [$now->next(FrozenTime::SATURDAY)->startOfDay(), $now->next(FrozenTime::SUNDAY)->endOfDay()];
         }
-    }
-
-    /**
-     * Create `from` and `to` values for the current month.
-     *
-     * @param bool $fullMonth Return the full month range or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
-     */
-    public function thisMonth(bool $fullMonth = true): array
-    {
-        $now = FrozenTime::now();
-
-        return [$fullMonth ? $now->startOfMonth() : $now, $now->endOfMonth()];
     }
 }
