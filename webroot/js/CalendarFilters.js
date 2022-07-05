@@ -4,11 +4,6 @@ export function defineCalendarFilters(DNA) {
     const CalendarFilters = class CalendarFilters extends extend(window.HTMLFormElement) {
         static get properties() {
             return {
-                dateParam: {
-                    type: String,
-                    attribute: 'date-param',
-                    defaultValue: 'date',
-                },
                 rangeParam: {
                     type: String,
                     attribute: 'range-param',
@@ -113,6 +108,38 @@ export function defineCalendarFilters(DNA) {
             this.tags = data.getAll(`${this.tagsParam}[]`);
         }
 
+        updateRange() {
+            const rangeInput = this.querySelector(`[name="${this.rangeParam}[]"]`);
+            if (!rangeInput) {
+                return;
+            }
+
+            rangeInput.value = [
+                this.querySelector(`[name="${this.yearParam}"]`)?.value,
+                this.querySelector(`[name="${this.monthParam}"]`)?.value || 1,
+                this.querySelector(`[name="${this.dayParam}"]`)?.value || 1,
+            ].join('-');
+            rangeInput.removeAttribute('form');
+
+            const radioInputs = this.querySelectorAll(`input[type="radio"][name="${this.rangeParam}"]`);
+            for (let i = 0; i < radioInputs.length; i++) {
+                radioInputs[i].setAttribute('form', '');
+            }
+        }
+
+        excludeRange() {
+            const rangeInput = this.querySelector(`[name="${this.rangeParam}[]"]`);
+            if (!rangeInput) {
+                return;
+            }
+            rangeInput.setAttribute('form', '');
+
+            const radioInputs = this.querySelectorAll(`input[type="radio"][name="${this.rangeParam}"]`);
+            for (let i = 0; i < radioInputs.length; i++) {
+                radioInputs[i].removeAttribute('form');
+            }
+        }
+
         onClick = (event) => {
             const target = event.target;
             if (!target) {
@@ -137,15 +164,23 @@ export function defineCalendarFilters(DNA) {
             switch (name) {
                 case this.monthParam:
                 case this.yearParam:
-                    return this.updateDateFilter();
-                case this.dateParam:
+                    this.updateDateFilter();
+                    this.updateRange();
+                    break;
+                case this.dayParam:
+                    this.updateRange();
+                    break;
                 case this.rangeParam:
+                    this.excludeRange();
+                    this.requestSubmit();
+                    break;
                 case this.categoriesParam:
                 case this.tagsParam:
                 case `${this.categoriesParam}[]`:
                 case `${this.tagsParam}[]`:
                     this.updateState();
-                    return this.requestSubmit();
+                    this.requestSubmit();
+                    break;
             }
         };
 

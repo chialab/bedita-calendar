@@ -29,6 +29,19 @@ class CalendarHelper extends DateRangesHelper
     public $helpers = ['Form', 'Html', 'Url'];
 
     /**
+     * Default configuration.
+     *
+     * @var array
+     */
+    protected $_defaultConfig = [
+        'params' => [
+            'day' => 'day',
+            'month' => 'month',
+            'year' => 'year',
+        ],
+    ];
+
+    /**
      * An array of i18n months names, useful for building a select input.
      *
      * @return array
@@ -131,13 +144,9 @@ class CalendarHelper extends DateRangesHelper
                 'search' => $this->getFilter('search'),
             ]);
 
-            if (empty($filters['date']) && empty($filters['range']) && empty($filters['year'])) {
+            if (empty($filters['range'])) {
                 $filters += array_filter([
-                    'date' => $this->getFilter('date'),
                     'range' => $this->getFilter('range'),
-                    'day' => $this->getFilter('day'),
-                    'month' => $this->getFilter('month'),
-                    'year' => $this->getFilter('year'),
                 ]);
             }
         }
@@ -157,7 +166,7 @@ class CalendarHelper extends DateRangesHelper
         $query = [];
         foreach ($filters as $key => $value) {
             switch ($key) {
-                case 'date':
+                case 'range':
                     $value = $formatDate($value);
                     break;
             }
@@ -183,14 +192,13 @@ class CalendarHelper extends DateRangesHelper
         return $this->Form->create($context, $options + [
             'type' => 'GET',
             'is' => 'calendar-filters',
-            'date-param' => $this->getFilterParam('date'),
             'range-param' => $this->getFilterParam('range'),
             'categories-param' => $this->getFilterParam('categories'),
             'tags-param' => $this->getFilterParam('tags'),
             'search-param' => $this->getFilterParam('search'),
-            'day-param' => $this->getFilterParam('day'),
-            'month-param' => $this->getFilterParam('month'),
-            'year-param' => $this->getFilterParam('year'),
+            'day-param' => $this->getConfig('params.day'),
+            'month-param' => $this->getConfig('params.month'),
+            'year-param' => $this->getConfig('params.year'),
         ]);
     }
 
@@ -228,16 +236,14 @@ class CalendarHelper extends DateRangesHelper
     public function dayControl(?array $options = null): string
     {
         $options = $options ?? [];
-        $date = FrozenTime::now();
+        $date = $this->getStartDate() ?? FrozenTime::now();
 
-        return $this->Form->control($this->getFilterParam('day'), [
+        return $this->Form->control($this->getConfig('params.day'), [
             'label' => false,
             'type' => 'select',
-            'options' => $this->getDaysInMonth(
-                $this->getFilter('year') ?? $date->year,
-                $this->getFilter('month') ?? $date->month
-            ),
-            'value' => $this->getFilter('day') ?? FrozenTime::now()->day,
+            'form' => '',
+            'options' => $this->getDaysInMonth($date->year, $date->month),
+            'value' => $date->day,
         ] + $options);
     }
 
@@ -250,12 +256,14 @@ class CalendarHelper extends DateRangesHelper
     public function monthControl(?array $options = null): string
     {
         $options = $options ?? [];
+        $date = $this->getStartDate() ?? FrozenTime::now();
 
-        return $this->Form->control($this->getFilterParam('month'), [
+        return $this->Form->control($this->getConfig('params.month'), [
             'label' => '',
             'type' => 'select',
+            'form' => '',
             'options' => $this->getMonths(),
-            'value' => $this->getFilter('month') ?? FrozenTime::now()->month,
+            'value' => $date->month,
         ] + $options);
     }
 
@@ -270,6 +278,7 @@ class CalendarHelper extends DateRangesHelper
     public function yearControl(?array $options = null, $start = '-2 years', $end = '+2 years'): string
     {
         $options = $options ?? [];
+        $date = $this->getStartDate() ?? FrozenTime::now();
 
         if (is_string($start)) {
             $start = FrozenTime::now()->modify($start)->year;
@@ -279,12 +288,24 @@ class CalendarHelper extends DateRangesHelper
         }
 
         $years = range($start, $end);
+        $yearsOptions = array_combine($years, $years);
+        if (!in_array($date->year, $years)) {
+            $yearsOptions[$date->year] = $date->year;
+            ksort($yearsOptions);
+        }
 
-        return $this->Form->control($this->getFilterParam('year'), [
+        $hidden = $this->Form->control($this->getFilterParam('range') . '[]', [
+            'type' => 'hidden',
+            'form' => is_array($this->getFilter('range')) ? null : '',
+            'value' => is_array($this->getFilter('range')) ? $date->format('Y-m-d') : '',
+        ]);
+
+        return $hidden . $this->Form->control($this->getConfig('params.year'), [
             'label' => '',
             'type' => 'select',
-            'options' => array_combine($years, $years),
-            'value' => $this->getFilter('year') ?? FrozenTime::now()->year,
+            'form' => '',
+            'options' => $yearsOptions,
+            'value' => $date->year,
         ] + $options);
     }
 
@@ -351,11 +372,12 @@ class CalendarHelper extends DateRangesHelper
         $options = $options ?? [];
         $attrs = $attrs ?? [];
         $ranges = Hash::normalize($ranges);
+        $range = $this->getFilter('range');
 
         return $this->Form->control($this->getFilterParam('range'), [
             'type' => 'radio',
             'options' => $ranges,
-            'value' => $this->getFilter('range'),
+            'value' => is_string($range) ? $range : null,
             'label' => false,
             'hiddenField' => false,
             'templates' => [
