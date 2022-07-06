@@ -1,5 +1,5 @@
 export function defineCalendarFilters(DNA) {
-    const { window, extend, customElements } = DNA;
+    const { window, dispatchEvent, extend, customElements } = DNA;
 
     const CalendarFilters = class CalendarFilters extends extend(window.HTMLFormElement) {
         static get properties() {
@@ -204,6 +204,19 @@ export function defineCalendarFilters(DNA) {
                 option.selected = num === 0;
                 days.insertBefore(option, days.firstChild);
             }
+        }
+
+        requestSubmit() {
+            if (window.HTMLFormElement.prototype.requestSubmit) {
+                super.requestSubmit();
+                return;
+            }
+
+            if (!dispatchEvent(this, 'submit')) {
+                return;
+            }
+
+            this.submit();
         }
     };
 
