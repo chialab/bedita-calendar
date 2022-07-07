@@ -32,6 +32,18 @@ trait RelativeDatesTrait
     }
 
     /**
+     * Create `from` and `to` values for "aftertomorrow".
+     *
+     * @return \Cake\I18n\FrozenTime[]
+     */
+    public function afterTomorrow(): array
+    {
+        $now = FrozenTime::now();
+
+        return [$now->addDay()->startOfDay(), $now->addDay(2)->endOfDay()];
+    }
+
+    /**
      * Create `from` and `to` values for the current week.
      *
      * @param bool $fullWeek Return the full week range or just the remaining time.
