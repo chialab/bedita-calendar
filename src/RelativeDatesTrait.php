@@ -38,9 +38,9 @@ trait RelativeDatesTrait
      */
     public function afterTomorrow(): array
     {
-        $aftertomorrow = FrozenTime::now()->addDay(2);
+        $afterTomorrow = FrozenTime::now()->addDay(2);
 
-        return [$aftertomorrow->startOfDay(), $aftertomorrow->endOfDay()];
+        return [$afterTomorrow->startOfDay(), $afterTomorrow->endOfDay()];
     }
 
     /**
