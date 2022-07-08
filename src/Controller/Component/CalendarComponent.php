@@ -263,6 +263,9 @@ class CalendarComponent extends Component
                     case 'tomorrow':
                         [$startDate, $endDate] = $this->tomorrow();
                         break;
+                    case 'after-tomorrow':
+                        [$startDate, $endDate] = $this->afterTomorrow();
+                        break;
                     case 'this-week':
                         [$startDate, $endDate] = $this->thisWeek();
                         break;
