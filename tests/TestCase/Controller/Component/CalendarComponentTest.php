@@ -145,7 +145,9 @@ class CalendarComponentTest extends TestCase
             new FrozenTime($start)
         )->toArray();
 
-        static::assertEquals($expected, array_map(fn ($items) => array_map(fn ($event) => $event->uname, $items), $events), '', 0, 10, true);
+        $actual = array_map(fn ($items) => array_map(fn ($event) => $event->uname, $items), $events);
+
+        static::assertEquals($expected, $actual, '', 0, 10, true);
     }
 
     /**

@@ -381,8 +381,8 @@ class CalendarComponent extends Component
             ->formatResults(function (iterable $results) use ($from, $to): iterable {
                 $grouped = collection($results)->unfold(function (ObjectEntity $event) use ($from, $to): \Generator {
                     foreach ($event->date_ranges as $dr) {
-                        $start = new FrozenTime($dr->start_date);
-                        $end = new FrozenTime($dr->end_date ?: $dr->start_date);
+                        $start = (new FrozenTime($dr->start_date))->startOfDay();
+                        $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
                         if ($start->gte($to) || $end->lt($from)) {
                             continue;
                         }
