@@ -253,8 +253,8 @@ class CalendarComponent extends Component
         $range = $this->getRangeFilter();
         if (!empty($range)) {
             if (is_array($range)) {
-                $startDate = new FrozenTime($range[0] ?? 'now');
-                $endDate = !empty($range[1]) ? new FrozenTime($range[1]) : null;
+                $startDate = (new FrozenTime($range[0] ?? 'now'))->startOfDay();
+                $endDate = !empty($range[1]) ? (new FrozenTime($range[1]))->endOfDay() : null;
             } else {
                 switch ($range) {
                     case 'today':
@@ -276,7 +276,7 @@ class CalendarComponent extends Component
                         [$startDate, $endDate] = $this->thisMonth();
                         break;
                     default:
-                        $startDate = new FrozenTime($range);
+                        $startDate = (new FrozenTime($range))->startOfDay();
                 }
             }
         }
