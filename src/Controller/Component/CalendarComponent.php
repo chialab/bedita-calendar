@@ -191,11 +191,15 @@ class CalendarComponent extends Component
     /**
      * Set the categories list filter.
      *
-     * @param string[] $categories Categories filter.
+     * @param string|string[] $categories Categories filter.
      * @return void
      */
-    public function setCategoriesFilter(array $categories): void
+    public function setCategoriesFilter($categories): void
     {
+        if (is_string($categories)) {
+            $categories = array_map('trim', explode(',', $categories));
+        }
+
         $this->categoriesFilter = $categories;
     }
 
@@ -212,11 +216,15 @@ class CalendarComponent extends Component
     /**
      * Set the tags list filter.
      *
-     * @param string[] $tags Tags filter.
+     * @param string|string[] $tags Tags filter.
      * @return void
      */
-    public function setTagsFilter(array $tags): void
+    public function setTagsFilter($tags): void
     {
+        if (is_string($tags)) {
+            $tags = array_map('trim', explode(',', $tags));
+        }
+
         $this->tagsFilter = $tags;
     }
 
