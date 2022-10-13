@@ -65,7 +65,7 @@ class ClosingDaysBehavior extends Behavior
                     : $object
             )
             : $results,
-            Query::PREPEND
+            Query::PREPEND,
         );
     }
 
