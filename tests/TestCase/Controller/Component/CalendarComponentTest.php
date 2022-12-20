@@ -104,7 +104,6 @@ class CalendarComponentTest extends TestCase
             'test' => [
                 [
                     '2022-02-15' => [
-                        'event-1',
                         'event-2',
                     ],
                     '2022-02-16' => [
@@ -113,6 +112,7 @@ class CalendarComponentTest extends TestCase
                     ],
                     '2022-02-17' => [
                         'event-2',
+                        'event-1',
                         'event-3',
                     ],
                     '2022-02-18' => [
@@ -142,13 +142,13 @@ class CalendarComponentTest extends TestCase
     public function testFindGroupByDayWithStart(array $expected, $start)
     {
         $events = $this->Calendar->findGroupedByDay(
-            $this->Objects->loadObjects([], 'events')->orderAsc('uname'),
+            $this->Objects->loadObjects([], 'events'),
             new FrozenTime($start)
         )->toArray();
 
         $actual = array_map(fn ($items) => array_map(fn ($event) => $event->uname, $items), $events);
 
-        static::assertEquals($expected, $actual, '', 0, 10, true);
+        static::assertSame($expected, $actual);
     }
 
     /**
@@ -162,7 +162,6 @@ class CalendarComponentTest extends TestCase
             'test' => [
                 [
                     '2022-02-15' => [
-                        'event-1',
                         'event-2',
                     ],
                     '2022-02-16' => [
@@ -192,13 +191,12 @@ class CalendarComponentTest extends TestCase
      */
     public function testFindGroupedByDayWithRange(array $expected, string $start, string $end)
     {
-        $start = new FrozenTime('2022-02-15 00:00:00');
         $events = $this->Calendar->findGroupedByDay(
-            $this->Objects->loadObjects([], 'events')->orderAsc('uname'),
+            $this->Objects->loadObjects([], 'events'),
             new FrozenTime($start),
             new FrozenTime($end)
         )->toArray();
 
-        static::assertEquals($expected, array_map(fn ($items) => array_map(fn ($event) => $event->uname, $items), $events), '', 0, 10, true);
+        static::assertSame($expected, array_map(fn ($items) => array_map(fn ($event) => $event->uname, $items), $events));
     }
 }

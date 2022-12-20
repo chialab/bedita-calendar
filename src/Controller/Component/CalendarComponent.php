@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Chialab\Calendar\Controller\Component;
 
+use BEdita\Core\Model\Entity\DateRange;
 use BEdita\Core\Model\Entity\ObjectEntity;
 use Cake\Controller\Component;
 use Cake\Database\Expression\FunctionExpression;
@@ -313,7 +314,7 @@ class CalendarComponent extends Component
         return $query
             ->find('dateRanges', [
                 'from_date' => $from->toIso8601String(),
-                'to_date' => $to !== null ? $to->toIso8601String() : null,
+                'to_date' => $to?->toIso8601String(),
             ])
             ->select([
                 'object_id' => $dateRanges->aliasField('object_id'),
@@ -378,26 +379,49 @@ class CalendarComponent extends Component
         return $this->findInRange($query, $from, $to)
             ->contain(['DateRanges'])
             ->formatResults(function (iterable $results) use ($from, $to): iterable {
-                $grouped = collection($results)->unfold(function (ObjectEntity $event) use ($from, $to): Generator {
-                    foreach ($event->date_ranges as $dr) {
-                        $start = (new FrozenTime($dr->start_date))->startOfDay();
-                        $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
-                        if ($start->gte($to) || $end->lt($from)) {
-                            continue;
-                        }
+                $grouped = collection($results)
+                    ->unfold(function (ObjectEntity $event) use ($from, $to): Generator {
+                        foreach ($event->date_ranges as $dr) {
+                            $start = (new FrozenTime($dr->start_date))->startOfDay();
+                            $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
+                            if ($start->gte($to) || $end->lt($from)) {
+                                continue;
+                            }
 
-                        $start = $start->max($from);
-                        while ($start->lte($end) && $start->lte($to)) {
-                            $day = $start->format('Y-m-d');
-                            $start = $start->addDay();
+                            $start = $start->max($from);
+                            while ($start->lte($end) && $start->lte($to)) {
+                                $day = $start->format('Y-m-d');
+                                $start = $start->addDay();
 
-                            yield compact('event', 'day');
+                                yield compact('event', 'day');
+                            }
                         }
-                    }
-                })
-                ->groupBy('day')
-                ->map(fn (array $items): array => array_column($items, 'event'))
-                ->toArray();
+                    })
+                    ->groupBy('day')
+                    ->map(function (array $items, string $day): array {
+                        $today = new FrozenTime($day);
+
+                        return collection($items)
+                            ->extract('event')
+                            ->sortBy(
+                                function (ObjectEntity $event) USE ($today): string {
+                                    $closestDR = collection($event->date_ranges)
+                                        ->filter(fn (DateRange $dr): bool => $today->isSameDay($dr->start_date) || ($today->gt($dr->start_date) && $dr->end_date !== null && $today->lt($dr->end_date)))
+                                        ->sortBy(
+                                            fn (DateRange $dr): string => $dr->start_date->format('c'),
+                                            SORT_ASC,
+                                            SORT_NATURAL,
+                                        )
+                                        ->first();
+
+                                    return ($closestDR->end_date ?? $closestDR->start_date)->format('c');
+                                },
+                                SORT_ASC,
+                                SORT_NATURAL
+                            )
+                            ->toList();
+                    })
+                    ->toArray();
 
                 ksort($grouped, SORT_STRING);
 
