@@ -48,12 +48,14 @@ define('CONFIG', ROOT . DS . 'config' . DS);
 define('CACHE', TMP . 'cache' . DS);
 define('CORE_PATH', $root . DS . 'vendor' . DS . 'cakephp' . DS . 'cakephp' . DS);
 
+Configure::write('Error.ignoredDeprecationPaths', ['*/cakephp/src/TestSuite/Fixture/FixtureInjector.php']);
 Configure::write('debug', true);
 Configure::write('App', [
     'namespace' => 'Chialab\Calendar\Test\TestApp',
     'encoding' => 'UTF-8',
     'paths' => [
         'plugins' => [ROOT . 'Plugin' . DS],
+        'templates' => [APP . 'Template' . DS],
     ],
 ]);
 
@@ -87,7 +89,7 @@ ConnectionManager::setConfig('test', [
 ConnectionManager::alias('test', 'default');
 
 Router::reload();
-Security::setSalt('BEDITA');
+Security::setSalt('BEDITA|BEDITA|BEDITA|BEDITA|BEDITA|BEDITA|BEDITA|BEDITA');
 
 FilesystemRegistry::setConfig([
     'default' => ['className' => NullAdapter::class],
@@ -100,6 +102,6 @@ $app->pluginBootstrap();
 
 // clear all before running tests
 TableRegistry::getTableLocator()->clear();
-Cache::clear(false, '_cake_core_');
-Cache::clear(false, '_cake_model_');
-Cache::clear(false, '_bedita_object_types_');
+Cache::clear('_cake_core_');
+Cache::clear('_cake_model_');
+Cache::clear('_bedita_object_types_');

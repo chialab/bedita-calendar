@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Chialab\Calendar\Test\TestApp;
 
 use Cake\Http\BaseApplication;
+use Cake\Http\MiddlewareQueue;
 
 /**
  * Application setup class.
@@ -16,7 +17,7 @@ class Application extends BaseApplication
     /**
      * @inheritDoc
      */
-    public function bootstrap()
+    public function bootstrap(): void
     {
         $this->addPlugin('BEdita/Core');
     }
@@ -24,7 +25,7 @@ class Application extends BaseApplication
     /**
      * @inheritDoc
      */
-    public function middleware($middlewareQueue)
+    public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
         return $middlewareQueue;
     }

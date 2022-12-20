@@ -62,7 +62,7 @@ class CalendarComponentTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -86,7 +86,7 @@ class CalendarComponentTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         unset($this->Calendar, $this->Objects, $this->controller);
 

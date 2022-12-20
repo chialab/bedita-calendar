@@ -29,11 +29,9 @@ class CalendarHelper extends DateRangesHelper
     public $helpers = ['Form', 'Html', 'Url'];
 
     /**
-     * Default configuration.
-     *
-     * @var array
+     * @inheritDoc
      */
-    protected array $_defaultConfig = [
+    protected $_defaultConfig = [
         'params' => [
             'day' => 'day',
             'month' => 'month',

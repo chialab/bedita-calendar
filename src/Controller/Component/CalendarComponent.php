@@ -93,11 +93,9 @@ class CalendarComponent extends Component
     protected int|null $yearFilter = null;
 
     /**
-     * Default configuration.
-     *
-     * @var array
+     * @inheritDoc
      */
-    protected array $_defaultConfig = [
+    protected $_defaultConfig = [
         'params' => [
             'range' => 'range',
             'categories' => 'categories',
@@ -121,7 +119,7 @@ class CalendarComponent extends Component
     /**
      * @inheritDoc
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
