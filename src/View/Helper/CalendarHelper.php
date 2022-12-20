@@ -24,7 +24,7 @@ class CalendarHelper extends DateRangesHelper
     use RelativeDatesTrait;
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public $helpers = ['Form', 'Html', 'Url'];
 
@@ -33,7 +33,7 @@ class CalendarHelper extends DateRangesHelper
      *
      * @var array
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'params' => [
             'day' => 'day',
             'month' => 'month',
@@ -78,7 +78,7 @@ class CalendarHelper extends DateRangesHelper
      * @param string $path Filter key.
      * @return mixed
      */
-    public function getFilter(string $path)
+    public function getFilter(string $path): mixed
     {
         $params = $this->_View->get(CalendarComponent::VIEW_PARAMS);
 
@@ -90,7 +90,7 @@ class CalendarHelper extends DateRangesHelper
      *
      * @return array
      */
-    public function getFilterParams()
+    public function getFilterParams(): array
     {
         $params = $this->_View->get(CalendarComponent::VIEW_PARAMS);
 
@@ -123,7 +123,7 @@ class CalendarHelper extends DateRangesHelper
      *
      * @return \Cake\I18n\FrozenTime|null
      */
-    public function getEndDate(): ?FrozenTime
+    public function getEndDate(): FrozenTime|null
     {
         return $this->getFilter('computed')[1];
     }
@@ -135,7 +135,7 @@ class CalendarHelper extends DateRangesHelper
      * @param bool|null $keepActive Should preserve active filters.
      * @return array List of query params.
      */
-    public function generateFilters(array $filters, ?bool $keepActive = true)
+    public function generateFilters(array $filters, bool|null $keepActive = true): array
     {
         if ($keepActive) {
             $filters += array_filter([
@@ -185,7 +185,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array $options An array of html attributes and options.
      * @return string An formatted opening FORM tag.
      */
-    public function createFiltersForm($context = null, ?array $options = null)
+    public function createFiltersForm(mixed $context = null, array|null $options = null): string
     {
         $options = $options ?? [];
 
@@ -207,7 +207,7 @@ class CalendarHelper extends DateRangesHelper
      *
      * @return string A closing FORM tag.
      */
-    public function closeFiltersForm()
+    public function closeFiltersForm(): string
     {
         return $this->Form->end();
     }
@@ -218,7 +218,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the input element.
      * @return string The <input> element.
      */
-    public function searchControl(?array $options = null): string
+    public function searchControl(array|null $options = null): string
     {
         $options = $options ?? [];
 
@@ -233,7 +233,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the select element.
      * @return string The <select> element.
      */
-    public function dayControl(?array $options = null): string
+    public function dayControl(array|null $options = null): string
     {
         $options = $options ?? [];
         $date = $this->getStartDate() ?? FrozenTime::now();
@@ -253,7 +253,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the select element.
      * @return string The <select> element.
      */
-    public function monthControl(?array $options = null): string
+    public function monthControl(array|null $options = null): string
     {
         $options = $options ?? [];
         $date = $this->getStartDate() ?? FrozenTime::now();
@@ -271,11 +271,11 @@ class CalendarHelper extends DateRangesHelper
      * Generate a <select> element for years.
      *
      * @param array|null $options Options for the select element.
-     * @param int|string|null $start The range start year.
-     * @param int|string|null $end The range end year.
+     * @param string|int|null $start The range start year.
+     * @param string|int|null $end The range end year.
      * @return string The <select> element.
      */
-    public function yearControl(?array $options = null, $start = '-2 years', $end = '+2 years'): string
+    public function yearControl(array|null $options = null, int|string|null $start = '-2 years', int|string|null $end = '+2 years'): string
     {
         $options = $options ?? [];
         $date = $this->getStartDate() ?? FrozenTime::now();
@@ -317,7 +317,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the checkbox element.
      * @return string The checkbox element.
      */
-    public function categoryControl(string $label, Category $category, ?array $options = null): string
+    public function categoryControl(string $label, Category $category, array|null $options = null): string
     {
         $options = $options ?? [];
 
@@ -342,7 +342,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the checkbox element.
      * @return string The checkbox element.
      */
-    public function tagControl(string $label, Tag $tag, ?array $options = null): string
+    public function tagControl(string $label, Tag $tag, array|null $options = null): string
     {
         $options = $options ?? [];
 
@@ -367,7 +367,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $attrs Options for the radio element.
      * @return string The radio element.
      */
-    public function rangeControl(array $ranges, ?array $options = null, ?array $attrs = null): string
+    public function rangeControl(array $ranges, array|null $options = null, array|null $attrs = null): string
     {
         $options = $options ?? [];
         $attrs = $attrs ?? [];
@@ -393,7 +393,7 @@ class CalendarHelper extends DateRangesHelper
      * @param array|null $options Options for the link element.
      * @return string The <a> element.
      */
-    public function resetControl(string $label, $options = null): string
+    public function resetControl(string $label, array|null $options = null): string
     {
         $url = $this->_View->getRequest()->getPath();
         $query = $this->_View->getRequest()->getQueryParams();

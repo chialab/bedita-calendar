@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Chialab\Calendar\Test\TestCase\Controller\Component;
 
 use Cake\Controller\ComponentRegistry;
@@ -66,7 +68,7 @@ class CalendarComponentTest extends TestCase
 
         $request = new ServerRequest();
         $response = new Response();
-        /** @var \Cake\Controller\Controller */
+        /** @var \Cake\Controller\Controller $controller */
         $this->controller = $this->getMockBuilder('Cake\Controller\Controller')
             ->setConstructorArgs([$request, $response])
             ->setMethods(null)
@@ -134,7 +136,6 @@ class CalendarComponentTest extends TestCase
      * @param array $expected Expected objects.
      * @param string $start Start date.
      * @return void
-     *
      * @covers ::findGroupedByDay()
      * @dataProvider findGroupByDayWithStartProvider()
      */
@@ -186,7 +187,6 @@ class CalendarComponentTest extends TestCase
      * @param string $start Start date.
      * @param string $end End date.
      * @return void
-     *
      * @covers ::findGroupedByDay()
      * @dataProvider findGroupedByDayWithRangeProvider()
      */

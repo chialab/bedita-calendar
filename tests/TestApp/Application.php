@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Chialab\Calendar\Test\TestApp;
 
@@ -13,7 +14,7 @@ use Cake\Http\BaseApplication;
 class Application extends BaseApplication
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function bootstrap()
     {
@@ -21,7 +22,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function middleware($middlewareQueue)
     {

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Test suite bootstrap for Plugin.
  *
@@ -20,15 +22,6 @@ use Cake\Routing\Router;
 use Cake\Utility\Security;
 use Chialab\Calendar\Test\TestApp\Application;
 use Chialab\Calendar\Test\TestApp\Filesystem\Adapter\NullAdapter;
-
-// Tokens introduced in PHP 7.4
-class PHP_Token_COALESCE_EQUAL extends PHP_Token
-{
-}
-
-class PHP_Token_FN extends PHP_Token
-{
-}
 
 $findRoot = function ($root) {
     do {

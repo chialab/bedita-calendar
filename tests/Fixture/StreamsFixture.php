@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Chialab\Calendar\Test\Fixture;
 
 use BEdita\Core\Test\Fixture\StreamsFixture as BEStreamsFixture;

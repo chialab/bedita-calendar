@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Chialab\Calendar\Test\TestCase\View\Helper;
 
 use Cake\TestSuite\TestCase;
