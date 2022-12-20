@@ -29,7 +29,7 @@ class CalendarComponent extends Component
      *
      * @var string
      */
-    protected const VIEW_PARAMS = '_calendar';
+    public const VIEW_PARAMS = '_calendar';
 
     /**
      * @inheritDoc

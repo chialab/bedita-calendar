@@ -142,7 +142,7 @@ class CalendarComponentTest extends TestCase
     public function testFindGroupByDayWithStart(array $expected, $start)
     {
         $events = $this->Calendar->findGroupedByDay(
-            $this->Objects->loadObjects([], 'events'),
+            $this->Objects->loadObjects([], 'events')->orderAsc('uname'),
             new FrozenTime($start)
         )->toArray();
 
@@ -194,7 +194,7 @@ class CalendarComponentTest extends TestCase
     {
         $start = new FrozenTime('2022-02-15 00:00:00');
         $events = $this->Calendar->findGroupedByDay(
-            $this->Objects->loadObjects([], 'events'),
+            $this->Objects->loadObjects([], 'events')->orderAsc('uname'),
             new FrozenTime($start),
             new FrozenTime($end)
         )->toArray();
