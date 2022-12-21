@@ -404,7 +404,7 @@ class CalendarComponent extends Component
                         return collection($items)
                             ->extract('event')
                             ->sortBy(
-                                function (ObjectEntity $event) USE ($today): string {
+                                function (ObjectEntity $event) use ($today): string {
                                     $closestDR = collection($event->date_ranges)
                                         ->filter(fn (DateRange $dr): bool => $today->isSameDay($dr->start_date) || ($today->gt($dr->start_date) && $dr->end_date !== null && $today->lt($dr->end_date)))
                                         ->sortBy(
