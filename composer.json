@@ -1,6 +1,6 @@
 {
     "name": "chialab/calendar",
-    "description": "BEdita 4 plugin for calendar views.",
+    "description": "BEdita 5 plugin for calendar views.",
     "type": "cakephp-plugin",
     "license": "MIT",
     "require": {
