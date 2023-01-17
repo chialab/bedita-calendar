@@ -378,10 +378,11 @@ class CalendarComponent extends Component
 
         return $this->findInRange($query, $from, $to)
             ->contain(['DateRanges'])
+            ->find('closingDays')
             ->formatResults(function (iterable $results) use ($from, $to): iterable {
                 $grouped = collection($results)
                     ->unfold(function (ObjectEntity $event) use ($from, $to): Generator {
-                        foreach ($event->date_ranges as $dr) {
+                        foreach ($event->filtered_date_ranges as $dr) {
                             $start = (new FrozenTime($dr->start_date))->startOfDay();
                             $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
                             if ($start->gte($to) || $end->lt($from)) {
@@ -405,7 +406,7 @@ class CalendarComponent extends Component
                             ->extract('event')
                             ->sortBy(
                                 function (ObjectEntity $event) use ($today): string {
-                                    $closestDR = collection($event->date_ranges)
+                                    $closestDR = collection($event->filtered_date_ranges)
                                         ->filter(function (DateRange $dr) use ($today): bool {
                                             $start = (new FrozenTime($dr->start_date))->startOfDay();
                                             $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
