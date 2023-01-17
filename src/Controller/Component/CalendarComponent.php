@@ -406,7 +406,12 @@ class CalendarComponent extends Component
                             ->sortBy(
                                 function (ObjectEntity $event) use ($today): string {
                                     $closestDR = collection($event->date_ranges)
-                                        ->filter(fn (DateRange $dr): bool => $today->isSameDay($dr->start_date) || ($today->gt($dr->start_date) && $dr->end_date !== null && $today->lt($dr->end_date)))
+                                        ->filter(function (DateRange $dr) use ($today): bool {
+                                            $start = (new FrozenTime($dr->start_date))->startOfDay();
+                                            $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
+
+                                            return $today->gte($start) && $today->lt($end);
+                                        })
                                         ->sortBy(
                                             fn (DateRange $dr): string => $dr->start_date->format('c'),
                                             SORT_ASC,
