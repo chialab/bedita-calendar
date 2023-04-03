@@ -161,6 +161,7 @@ export function defineCalendarFilters(DNA) {
             }
 
             const name = target.getAttribute('name');
+            const type = target.getAttribute('type');
             switch (name) {
                 case this.monthParam:
                 case this.yearParam:
@@ -181,6 +182,11 @@ export function defineCalendarFilters(DNA) {
                     this.updateState();
                     this.requestSubmit();
                     break;
+                default: {
+                    if (type === 'radio' || type === 'checkbox') {
+                        this.requestSubmit();
+                    }
+                }
             }
         };
 
