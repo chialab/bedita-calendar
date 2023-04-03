@@ -1,6 +1,6 @@
 # Chialab/Calendar
 
-**Calendar** is a [BEdita 5](https://www.bedita.com/) plugin designed render and filter calendar views.
+**Calendar** is a [BEdita 5](https://www.bedita.com/) plugin designed to render and filter calendar views.
 
 ## Usage
 
