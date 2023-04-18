@@ -380,26 +380,26 @@ class CalendarComponent extends Component
             ->find('closingDays')
             ->formatResults(function (iterable $results) use ($from, $to): iterable {
                 $grouped = collection($results)
-                ->unfold(function (ObjectEntity $object) use ($from, $to): Generator {
-                    foreach ($object->filtered_date_ranges as $dr) {
-                        $start = (new FrozenTime($dr->start_date))->startOfDay();
-                        $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
-                        if ($start->gte($to) || $end->lt($from)) {
-                            continue;
-                        }
+                    ->unfold(function (ObjectEntity $object) use ($from, $to): Generator {
+                        foreach ($object->filtered_date_ranges as $dr) {
+                            $start = (new FrozenTime($dr->start_date))->startOfDay();
+                            $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
+                            if ($start->gte($to) || $end->lt($from)) {
+                                continue;
+                            }
 
-                        $start = $start->max($from);
-                        while ($start->lte($end) && $start->lte($to)) {
-                            $day = $start->format('Y-m-d');
-                            $start = $start->addDay();
-                            $event = clone $object;
-                            $event->set('date_ranges', [$dr]);
-                            $event->set('filtered_date_ranges', [$dr]);
+                            $start = $start->max($from);
+                            while ($start->lte($end) && $start->lte($to)) {
+                                $day = $start->format('Y-m-d');
+                                $start = $start->addDay();
+                                $event = clone $object;
+                                $event->set('date_ranges', [$dr]);
+                                $event->set('filtered_date_ranges', [$dr]);
 
-                            yield compact('event', 'day');
+                                yield compact('event', 'day');
+                            }
                         }
-                    }
-                })
+                    })
                     ->groupBy('day')
                     ->map(fn (array $items, string $day): array => collection($items)
                         ->extract('event')
