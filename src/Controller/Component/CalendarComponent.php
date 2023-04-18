@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Chialab\Calendar\Controller\Component;
 
-use BEdita\Core\Model\Entity\DateRange;
 use BEdita\Core\Model\Entity\ObjectEntity;
 use Cake\Controller\Component;
 use Cake\Database\Expression\FunctionExpression;
@@ -409,8 +408,7 @@ class CalendarComponent extends Component
                             SORT_ASC,
                             SORT_NATURAL
                         )
-                        ->toList()
-                    )
+                        ->toList())
                     ->toArray();
 
                 ksort($grouped, SORT_STRING);
