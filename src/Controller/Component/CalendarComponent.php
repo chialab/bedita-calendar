@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Chialab\Calendar\Controller\Component;
 
-use BEdita\Core\Model\Entity\DateRange;
 use BEdita\Core\Model\Entity\ObjectEntity;
 use Cake\Controller\Component;
 use Cake\Database\Expression\FunctionExpression;
@@ -381,8 +380,8 @@ class CalendarComponent extends Component
             ->find('closingDays')
             ->formatResults(function (iterable $results) use ($from, $to): iterable {
                 $grouped = collection($results)
-                    ->unfold(function (ObjectEntity $event) use ($from, $to): Generator {
-                        foreach ($event->filtered_date_ranges as $dr) {
+                    ->unfold(function (ObjectEntity $object) use ($from, $to): Generator {
+                        foreach ($object->filtered_date_ranges as $dr) {
                             $start = (new FrozenTime($dr->start_date))->startOfDay();
                             $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
                             if ($start->gte($to) || $end->lt($from)) {
@@ -393,40 +392,22 @@ class CalendarComponent extends Component
                             while ($start->lte($end) && $start->lte($to)) {
                                 $day = $start->format('Y-m-d');
                                 $start = $start->addDay();
+                                $event = clone $object;
+                                $event->set('primary_date_range', $dr);
 
                                 yield compact('event', 'day');
                             }
                         }
                     })
                     ->groupBy('day')
-                    ->map(function (array $items, string $day): array {
-                        $today = new FrozenTime($day);
-
-                        return collection($items)
-                            ->extract('event')
-                            ->sortBy(
-                                function (ObjectEntity $event) use ($today): string {
-                                    $closestDR = collection($event->filtered_date_ranges)
-                                        ->filter(function (DateRange $dr) use ($today): bool {
-                                            $start = (new FrozenTime($dr->start_date))->startOfDay();
-                                            $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
-
-                                            return $today->gte($start) && $today->lt($end);
-                                        })
-                                        ->sortBy(
-                                            fn (DateRange $dr): string => $dr->start_date->format('c'),
-                                            SORT_ASC,
-                                            SORT_NATURAL,
-                                        )
-                                        ->first();
-
-                                    return ($closestDR->end_date ?? $closestDR->start_date)->format('c');
-                                },
-                                SORT_ASC,
-                                SORT_NATURAL
-                            )
-                            ->toList();
-                    })
+                    ->map(fn (array $items): array => collection($items)
+                        ->extract('event')
+                        ->sortBy(
+                            fn (ObjectEntity $event): string => $event->get('primary_date_range')->start_date->format('c'),
+                            SORT_ASC,
+                            SORT_NATURAL
+                        )
+                        ->toList())
                     ->toArray();
 
                 ksort($grouped, SORT_STRING);
