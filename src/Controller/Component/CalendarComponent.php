@@ -393,18 +393,17 @@ class CalendarComponent extends Component
                                 $day = $start->format('Y-m-d');
                                 $start = $start->addDay();
                                 $event = clone $object;
-                                $event->set('date_ranges', [$dr]);
-                                $event->set('filtered_date_ranges', [$dr]);
+                                $event->set('primary_date_range', $dr);
 
                                 yield compact('event', 'day');
                             }
                         }
                     })
                     ->groupBy('day')
-                    ->map(fn (array $items, string $day): array => collection($items)
+                    ->map(fn (array $items): array => collection($items)
                         ->extract('event')
                         ->sortBy(
-                            fn (ObjectEntity $event): string => collection($event->filtered_date_ranges)->first()->start_date->format('c'),
+                            fn (ObjectEntity $event): string => collection($event->primary_date_range)->first()->start_date->format('c'),
                             SORT_ASC,
                             SORT_NATURAL
                         )
