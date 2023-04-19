@@ -403,7 +403,7 @@ class CalendarComponent extends Component
                     ->map(fn (array $items): array => collection($items)
                         ->extract('event')
                         ->sortBy(
-                            fn (ObjectEntity $event): string => collection($event->primary_date_range)->first()->start_date->format('c'),
+                            fn (ObjectEntity $event): string => $event->get('primary_date_range')->start_date->format('c'),
                             SORT_ASC,
                             SORT_NATURAL
                         )
