@@ -12,6 +12,7 @@ use Cake\I18n\FrozenTime;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Chialab\Calendar\RelativeDatesTrait;
+use Generator;
 use InvalidArgumentException;
 
 /**
@@ -378,27 +379,38 @@ class CalendarComponent extends Component
 
         return $this->findInRange($query, $from, $to)
             ->contain(['DateRanges'])
+            ->find('closingDays')
             ->formatResults(function (iterable $results) use ($from, $to): iterable {
-                $grouped = collection($results)->unfold(function (ObjectEntity $event) use ($from, $to): \Generator {
-                    foreach ($event->date_ranges as $dr) {
-                        $start = (new FrozenTime($dr->start_date))->startOfDay();
-                        $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
-                        if ($start->gte($to) || $end->lt($from)) {
-                            continue;
-                        }
+                $grouped = collection($results)
+                    ->unfold(function (ObjectEntity $object) use ($from, $to): Generator {
+                        foreach ($object->filtered_date_ranges as $dr) {
+                            $start = (new FrozenTime($dr->start_date))->startOfDay();
+                            $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
+                            if ($start->gte($to) || $end->lt($from)) {
+                                continue;
+                            }
 
-                        $start = $start->max($from);
-                        while ($start->lte($end) && $start->lte($to)) {
-                            $day = $start->format('Y-m-d');
-                            $start = $start->addDay();
+                            $start = $start->max($from);
+                            while ($start->lte($end) && $start->lte($to)) {
+                                $day = $start->format('Y-m-d');
+                                $start = $start->addDay();
+                                $event = clone $object;
+                                $event->set('primary_date_range', $dr);
 
-                            yield compact('event', 'day');
+                                yield compact('event', 'day');
+                            }
                         }
-                    }
-                })
-                ->groupBy('day')
-                ->map(fn (array $items): array => array_column($items, 'event'))
-                ->toArray();
+                    })
+                    ->groupBy('day')
+                    ->map(fn (array $items): array => collection($items)
+                        ->extract('event')
+                        ->sortBy(
+                            fn (ObjectEntity $event): string => $event->get('primary_date_range')->start_date->format('c'),
+                            SORT_ASC,
+                            SORT_NATURAL
+                        )
+                        ->toList())
+                    ->toArray();
 
                 ksort($grouped, SORT_STRING);
 
