@@ -186,22 +186,34 @@ export function defineCalendarFilters(DNA) {
 
         updateDateFilter() {
             const days = this.querySelector(`[name="${this.dayParam}"]`);
-            if (!days) {
+            const months = this.querySelector(`[name="${this.monthParam}"]`);
+            const years = this.querySelector(`[name="${this.yearParam}"]`);
+            if (!days || !months || !years) {
                 return;
             }
 
-            const data = new FormData(this);
-            const month = data.get(this.monthParam);
-            const year = data.get(this.yearParam);
+            const day = parseInt(days.value);
+            const month = parseInt(months.value);
+            const year = parseInt(years.value);
+            if (isNaN(month) || isNaN(year)) {
+                return;
+            }
+
             const date = new Date(year, month, 0);
+            const maxDays = date.getDate();
 
             days.innerHTML = '';
-            let num = date.getDate();
+            let num = maxDays;
             while (num--) {
+                const dayValue = num + 1;
                 const option = this.ownerDocument.createElement('option');
-                option.value = num + 1;
-                option.textContent = num + 1;
-                option.selected = num === 0;
+                option.value = dayValue;
+                option.textContent = dayValue;
+                if (day <= maxDays) {
+                    option.selected = dayValue === day;
+                } else {
+                    option.selected = dayValue === 1;
+                }
                 days.insertBefore(option, days.firstChild);
             }
         }
