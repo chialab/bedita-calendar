@@ -22,6 +22,7 @@ use Cake\Routing\Router;
 use Cake\Utility\Security;
 use Chialab\Calendar\Test\TestApp\Application;
 use Chialab\Calendar\Test\TestApp\Filesystem\Adapter\NullAdapter;
+use Migrations\TestSuite\Migrator;
 
 $findRoot = function ($root) {
     do {
@@ -80,7 +81,7 @@ Cache::setConfig([
 ]);
 
 if (!getenv('db_dsn')) {
-    putenv('db_dsn=sqlite:///:memory:');
+    putenv('db_dsn=mysql://leo:r4gn4r0k@127.0.0.1:3308/bedita5-test');
 }
 ConnectionManager::setConfig('test', [
     'url' => getenv('db_dsn'),
@@ -105,3 +106,7 @@ TableRegistry::getTableLocator()->clear();
 Cache::clear('_cake_core_');
 Cache::clear('_cake_model_');
 Cache::clear('_bedita_object_types_');
+
+// Run migrations
+$migrator = new Migrator();
+$migrator->run(['plugin' => 'BEdita/Core']);
