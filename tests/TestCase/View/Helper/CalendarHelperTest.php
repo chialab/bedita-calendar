@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Chialab\Calendar\Test\TestCase\View\Helper;
 
 use Cake\TestSuite\TestCase;
@@ -22,7 +24,7 @@ class CalendarHelperTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $view = new View();
@@ -34,7 +36,7 @@ class CalendarHelperTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         unset($this->Calendar);
 

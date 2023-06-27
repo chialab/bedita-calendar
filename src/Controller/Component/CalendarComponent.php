@@ -29,10 +29,10 @@ class CalendarComponent extends Component
      *
      * @var string
      */
-    const VIEW_PARAMS = '_calendar';
+    public const VIEW_PARAMS = '_calendar';
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public $components = ['Chialab/FrontendKit.Objects'];
 
@@ -41,26 +41,26 @@ class CalendarComponent extends Component
      *
      * @var \Cake\I18n\FrozenTime|null
      */
-    protected ?FrozenTime $dateFilter = null;
+    protected FrozenTime|null $dateFilter = null;
 
     /**
      * Range filter.
      *
      * @var array|string|null
      */
-    protected $rangeFilter = null;
+    protected array|string|null $rangeFilter = null;
 
     /**
      * Categories list filter.
      *
-     * @var string[]
+     * @var array<string>
      */
     protected array $categoriesFilter = [];
 
     /**
      * Tags list filter.
      *
-     * @var string[]
+     * @var array<string>
      */
     protected array $tagsFilter = [];
 
@@ -69,33 +69,31 @@ class CalendarComponent extends Component
      *
      * @var string|null
      */
-    protected ?string $searchFilter = null;
+    protected string|null $searchFilter = null;
 
     /**
      * Day filter.
      *
      * @var int|null
      */
-    protected ?int $dayFilter = null;
+    protected int|null $dayFilter = null;
 
     /**
      * Month filter.
      *
      * @var int|null
      */
-    protected ?int $monthFilter = null;
+    protected int|null $monthFilter = null;
 
     /**
      * Year filter.
      *
      * @var int|null
      */
-    protected ?int $yearFilter = null;
+    protected int|null $yearFilter = null;
 
     /**
-     * Default configuration.
-     *
-     * @var array
+     * @inheritDoc
      */
     protected $_defaultConfig = [
         'params' => [
@@ -111,7 +109,7 @@ class CalendarComponent extends Component
      *
      * @return array
      */
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         return [
             'Controller.beforeRender' => 'beforeRender',
@@ -119,9 +117,9 @@ class CalendarComponent extends Component
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -146,7 +144,7 @@ class CalendarComponent extends Component
      *
      * @return void
      */
-    public function beforeRender()
+    public function beforeRender(): void
     {
         $this->getController()->set(static::VIEW_PARAMS, [
             'range' => $this->getRangeFilter(),
@@ -163,7 +161,7 @@ class CalendarComponent extends Component
      *
      * @return array|string|null
      */
-    public function getRangeFilter()
+    public function getRangeFilter(): array|string|null
     {
         return $this->rangeFilter;
     }
@@ -171,10 +169,10 @@ class CalendarComponent extends Component
     /**
      * Set the range filter.
      *
-     * @param array|string|null $date Date filter.
+     * @param array|string|null $range Range filter.
      * @return void
      */
-    public function setRangeFilter($range): void
+    public function setRangeFilter(array|string|null $range): void
     {
         $this->rangeFilter = $range;
     }
@@ -192,7 +190,7 @@ class CalendarComponent extends Component
     /**
      * Set the categories list filter.
      *
-     * @param string[] $categories Categories filter.
+     * @param array<string> $categories Categories filter.
      * @return void
      */
     public function setCategoriesFilter(array $categories): void
@@ -213,7 +211,7 @@ class CalendarComponent extends Component
     /**
      * Set the tags list filter.
      *
-     * @param string[] $tags Tags filter.
+     * @param array<string> $tags Tags filter.
      * @return void
      */
     public function setTagsFilter(array $tags): void
@@ -226,7 +224,7 @@ class CalendarComponent extends Component
      *
      * @return string|null
      */
-    public function getSearchFilter(): ?string
+    public function getSearchFilter(): string|null
     {
         return $this->searchFilter;
     }
@@ -237,7 +235,7 @@ class CalendarComponent extends Component
      * @param string|null $value The value to set.
      * @return void
      */
-    public function setSearchFilter(?string $value): void
+    public function setSearchFilter(string|null $value): void
     {
         $this->searchFilter = $value;
     }
@@ -308,14 +306,14 @@ class CalendarComponent extends Component
      * @param \Cake\I18n\FrozenTime|null $to To.
      * @return \Cake\ORM\Query
      */
-    protected function getDateBoundariesSubQuery(Table $dateRanges, FrozenTime $from, ?FrozenTime $to): Query
+    protected function getDateBoundariesSubQuery(Table $dateRanges, FrozenTime $from, FrozenTime|null $to): Query
     {
         $query = $dateRanges->find();
 
         return $query
             ->find('dateRanges', [
                 'from_date' => $from->toIso8601String(),
-                'to_date' => $to !== null ? $to->toIso8601String() : null,
+                'to_date' => $to?->toIso8601String(),
             ])
             ->select([
                 'object_id' => $dateRanges->aliasField('object_id'),
@@ -340,9 +338,9 @@ class CalendarComponent extends Component
      * @return \Cake\ORM\Query
      * @throws \InvalidArgumentException Throws an exception when the table being queried is not linked with DateRanges.
      */
-    public function findInRange(Query $query, FrozenTime $from, ?FrozenTime $to = null): Query
+    public function findInRange(Query $query, FrozenTime $from, FrozenTime|null $to = null): Query
     {
-        /** @var \Cake\ORM\Table */
+        /** @var \Cake\ORM\Table $table */
         $table = $query->getRepository();
         if (!$table->hasAssociation('DateRanges')) {
             throw new InvalidArgumentException('Table must be associated with DateRanges');
@@ -373,7 +371,7 @@ class CalendarComponent extends Component
      * @param \Cake\I18n\FrozenTime|null $to Range end.
      * @return \Cake\ORM\Query
      */
-    public function findGroupedByDay(Query $query, FrozenTime $from, ?FrozenTime $to = null): Query
+    public function findGroupedByDay(Query $query, FrozenTime $from, FrozenTime|null $to = null): Query
     {
         $to = $to ?? $from->addWeek();
 

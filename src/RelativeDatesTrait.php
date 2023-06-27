@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Chialab\Calendar;
 
@@ -10,7 +11,7 @@ trait RelativeDatesTrait
      * Create `from` and `to` values for "today".
      *
      * @param bool $fullDay Return the full day or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
+     * @return array<\Cake\I18n\FrozenTime>
      */
     public function today(bool $fullDay = true): array
     {
@@ -22,7 +23,7 @@ trait RelativeDatesTrait
     /**
      * Create `from` and `to` values for "tomorrow".
      *
-     * @return \Cake\I18n\FrozenTime[]
+     * @return array<\Cake\I18n\FrozenTime>
      */
     public function tomorrow(): array
     {
@@ -34,7 +35,7 @@ trait RelativeDatesTrait
     /**
      * Create `from` and `to` values for "aftertomorrow".
      *
-     * @return \Cake\I18n\FrozenTime[]
+     * @return array<\Cake\I18n\FrozenTime>
      */
     public function afterTomorrow(): array
     {
@@ -47,7 +48,7 @@ trait RelativeDatesTrait
      * Create `from` and `to` values for the current week.
      *
      * @param bool $fullWeek Return the full week range or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
+     * @return array<\Cake\I18n\FrozenTime>
      */
     public function thisWeek(bool $fullWeek = true): array
     {
@@ -60,7 +61,7 @@ trait RelativeDatesTrait
      * Create `from` and `to` values for the current weekend.
      *
      * @param bool $fullWeekend Return the full weekend range or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
+     * @return array<\Cake\I18n\FrozenTime>
      */
     public function thisWeekend(bool $fullWeekend = true): array
     {
@@ -79,7 +80,7 @@ trait RelativeDatesTrait
      * Create `from` and `to` values for the current month.
      *
      * @param bool $fullMonth Return the full month range or just the remaining time.
-     * @return \Cake\I18n\FrozenTime[]
+     * @return array<\Cake\I18n\FrozenTime>
      */
     public function thisMonth(bool $fullMonth = true): array
     {

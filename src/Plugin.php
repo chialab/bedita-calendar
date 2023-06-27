@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Chialab\Calendar;
 
@@ -10,7 +11,6 @@ use Cake\Core\PluginApplicationInterface;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
 use Cake\ORM\Query;
-use Cake\ORM\Table;
 
 /**
  * Plugin for Chialab\Calendar
@@ -20,7 +20,7 @@ class Plugin extends BasePlugin
     /**
      * @inheritDoc
      */
-    public function bootstrap(PluginApplicationInterface $app)
+    public function bootstrap(PluginApplicationInterface $app): void
     {
         parent::bootstrap($app);
 
