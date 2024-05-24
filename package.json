@@ -11,7 +11,7 @@
     "repository": "git@github.com:chialab/bedita-calendar.git",
     "author": "Chialab <dev@chialab.it> (https://www.chialab.io)",
     "license": "MIT",
-    "dependencies": {
-        "@chialab/dna": "^3.18.2"
+    "peerDependencies": {
+        "@chialab/dna": "*"
     }
 }

@@ -1,7 +1,10 @@
 export function defineCalendarFilters(DNA) {
-    const { window, dispatchEvent, extend, customElements } = DNA;
-
-    const CalendarFilters = class CalendarFilters extends extend(window.HTMLFormElement) {
+    const BaseElement = DNA.HTML ?
+        // DNA 4
+        DNA.HTML.Form :
+        // DNA 3
+        DNA.extend(HTMLFormElement);
+    const CalendarFilters = class CalendarFilters extends BaseElement {
         static get properties() {
             return {
                 rangeParam: {
@@ -219,12 +222,12 @@ export function defineCalendarFilters(DNA) {
         }
 
         requestSubmit() {
-            if (window.HTMLFormElement.prototype.requestSubmit) {
+            if (HTMLFormElement.prototype.requestSubmit) {
                 super.requestSubmit();
                 return;
             }
 
-            if (!dispatchEvent(this, 'submit')) {
+            if (!DNA.dispatchEvent(this, 'submit')) {
                 return;
             }
 
@@ -232,9 +235,17 @@ export function defineCalendarFilters(DNA) {
         }
     };
 
-    customElements.define('calendar-filters', CalendarFilters, {
-        extends: 'form',
-    });
+    if (DNA.define) {
+        // DNA 4
+        DNA.define('calendar-filters', CalendarFilters, {
+            extends: 'form',
+        });
+    } else {
+        // DNA 3
+        customElements.define('calendar-filters', CalendarFilters, {
+            extends: 'form',
+        });
+    }
 
     return CalendarFilters;
 }
