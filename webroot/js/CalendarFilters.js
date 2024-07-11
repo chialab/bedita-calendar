@@ -240,7 +240,7 @@ export function defineCalendarFilters(DNA) {
         DNA.define('calendar-filters', CalendarFilters, {
             extends: 'form',
         });
-    } else {
+    } else if (DNA.customElements) {
         // DNA 3
         customElements.define('calendar-filters', CalendarFilters, {
             extends: 'form',
