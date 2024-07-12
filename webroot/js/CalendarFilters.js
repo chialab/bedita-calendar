@@ -242,7 +242,7 @@ export function defineCalendarFilters(DNA) {
         });
     } else if (DNA.customElements) {
         // DNA 3
-        customElements.define('calendar-filters', CalendarFilters, {
+        DNA.customElements.define('calendar-filters', CalendarFilters, {
             extends: 'form',
         });
     }
