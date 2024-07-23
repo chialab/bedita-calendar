@@ -100,14 +100,14 @@ class ClosingDaysBehavior extends Behavior
         }
 
         // Go back to start of first week, then go back another hour so that "next monday" doesn't jump to the next week already.
-        $it = $start->startOfWeek()->subHour();
+        $it = $start->startOfWeek()->subHours(1);
         $closingDays = array_values($closingDays);
         $subRanges = [];
         while ($it <= $dr->end_date) {
             $day = current($closingDays);
             /** @var \Cake\I18n\FrozenTime $it */
             $it = $it->next($day);
-            $subRanges[] = new DateRange(['start_date' => $it->subDay()->endOfDay(), 'end_date' => $it->addDay()]);
+            $subRanges[] = new DateRange(['start_date' => $it->subDays(1)->endOfDay(), 'end_date' => $it->addDays(1)]);
 
             if (next($closingDays) === false) {
                 reset($closingDays);

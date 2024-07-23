@@ -39,7 +39,7 @@ trait RelativeDatesTrait
      */
     public function afterTomorrow(): array
     {
-        $afterTomorrow = FrozenTime::now()->addDay(2);
+        $afterTomorrow = FrozenTime::now()->addDays(2);
 
         return [$afterTomorrow->startOfDay(), $afterTomorrow->endOfDay()];
     }
@@ -68,9 +68,9 @@ trait RelativeDatesTrait
         $now = FrozenTime::now();
         switch ($now->dayOfWeek) {
             case FrozenTime::SATURDAY:
-                return [$fullWeekend ? $now->startOfDay() : $now, $now->addDay()->endOfDay()];
+                return [$fullWeekend ? $now->startOfDay() : $now, $now->addDays(1)->endOfDay()];
             case FrozenTime::SUNDAY:
-                return [$fullWeekend ? $now->subDay()->startOfDay() : $now, $now->endOfDay()];
+                return [$fullWeekend ? $now->subDays(1)->startOfDay() : $now, $now->endOfDay()];
             default:
                 return [$now->next(FrozenTime::SATURDAY)->startOfDay(), $now->next(FrozenTime::SUNDAY)->endOfDay()];
         }

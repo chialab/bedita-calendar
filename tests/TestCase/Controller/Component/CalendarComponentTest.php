@@ -17,7 +17,7 @@ use Cake\TestSuite\TestCase;
 class CalendarComponentTest extends TestCase
 {
     public $fixtures = [
-        'plugin.Chialab/Calendar.ObjectTypes',
+        'plugin.BEdita/Core.ObjectTypes',
         'plugin.BEdita/Core.PropertyTypes',
         'plugin.Chialab/Calendar.Properties',
         'plugin.Chialab/Calendar.Relations',
@@ -76,6 +76,10 @@ class CalendarComponentTest extends TestCase
 
         $this->controller->viewBuilder()->setTemplatePath('Pages');
 
+        // Add behavior, since the test app does not
+        $table = $this->getTableLocator()->get('Events');
+        $table->addBehavior('Chialab/Calendar.ClosingDays');
+
         $registry = new ComponentRegistry($this->controller);
         $this->Objects = $registry->load('Chialab/FrontendKit.Objects');
         $this->Calendar = $registry->load('Chialab/Calendar.Calendar');
@@ -112,8 +116,8 @@ class CalendarComponentTest extends TestCase
                     ],
                     '2022-02-17' => [
                         'event-2',
-                        'event-1',
                         'event-3',
+                        'event-1',
                     ],
                     '2022-02-18' => [
                         'event-3',
