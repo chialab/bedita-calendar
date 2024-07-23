@@ -8,7 +8,9 @@
 
     <config name="installed_paths" value="../../cakephp/cakephp-codesniffer,../../slevomat/coding-standard"/>
 
-    <rule ref="CakePHP" />
+    <rule ref="CakePHP">
+        <exclude name="Generic.Files.LineLength"/>
+    </rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat">
         <properties>
             <property name="shortNullable" type="string" value="no"/>

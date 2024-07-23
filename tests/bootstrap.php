@@ -80,9 +80,6 @@ Cache::setConfig([
     '_bedita_core_' => ['className' => NullEngine::class],
 ]);
 
-if (!getenv('db_dsn')) {
-    putenv('db_dsn=mysql://leo:r4gn4r0k@127.0.0.1:3308/bedita5-test');
-}
 ConnectionManager::setConfig('test', [
     'url' => getenv('db_dsn'),
     // 'log' => true,
