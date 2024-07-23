@@ -373,7 +373,7 @@ class CalendarComponent extends Component
      */
     public function findGroupedByDay(Query $query, FrozenTime $from, FrozenTime|null $to = null): Query
     {
-        $to = $to ?? $from->addWeek();
+        $to = $to ?? $from->addWeeks(1);
 
         return $this->findInRange($query, $from, $to)
             ->contain(['DateRanges'])
@@ -391,7 +391,7 @@ class CalendarComponent extends Component
                             $start = $start->max($from);
                             while ($start->lessThanOrEquals($end) && $start->lessThanOrEquals($to)) {
                                 $day = $start->format('Y-m-d');
-                                $start = $start->addDay();
+                                $start = $start->addDays(1);
                                 $event = clone $object;
                                 $event->set('primary_date_range', $dr);
 
