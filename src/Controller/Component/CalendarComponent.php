@@ -247,7 +247,7 @@ class CalendarComponent extends Component
      */
     public function getComputedRange(): array
     {
-        $startDate = new FrozenTime();
+        $startDate = (new FrozenTime())->startOfDay();
         $endDate = null;
         $range = $this->getRangeFilter();
         if (!empty($range)) {
