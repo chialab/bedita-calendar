@@ -51,6 +51,7 @@ class TreesFixture extends BETreesFixture
                 'parent_id' => $parent ? $parent['object_id'] : null,
                 'root_id' => $parent ? $parent['root_id'] : $id,
                 'parent_node_id' => $parent ? $parentIndex : null,
+                'slug' => sprintf('branch-%s', $index),
                 'priority' => ++$priority,
                 'menu' => 1,
                 'canonical' => 0,
