@@ -53,17 +53,17 @@ class ClosingDaysBehavior extends Behavior
     public function findClosingDays(Query $query): Query
     {
         return $query->formatResults(
-            fn (CollectionInterface $results) => $query->isHydrationEnabled()
+            fn(CollectionInterface $results) => $query->isHydrationEnabled()
             ? $results->map(
-                fn (ObjectEntity $object): ObjectEntity => !$object->has('filtered_date_ranges') && $object->has('date_ranges')
+                fn(ObjectEntity $object): ObjectEntity => !$object->has('filtered_date_ranges') && $object->has('date_ranges')
                     ? $object
                         ->set(
                             'filtered_date_ranges',
-                            collection((array)$object->get('date_ranges'))->unfold(Closure::fromCallable([$this, 'applyClosingDays']))
+                            collection((array)$object->get('date_ranges'))->unfold(Closure::fromCallable([$this, 'applyClosingDays'])),
                         )
                         ->setAccess('filtered_date_ranges', false)
                         ->setVirtual(['filtered_date_ranges'], true)
-                    : $object
+                    : $object,
             )
             : $results,
             Query::PREPEND,
@@ -81,7 +81,7 @@ class ClosingDaysBehavior extends Behavior
         $params = is_string($dr->params) ? json_decode($dr->params, true) : $dr->params;
         $closingDays = array_intersect_key(
             static::WEEKDAYS,
-            array_filter((array)($params['weekdays'] ?? []), fn ($val): bool => $val === false),
+            array_filter((array)($params['weekdays'] ?? []), fn($val): bool => $val === false),
         );
         if (empty($closingDays)) {
             // No closing days for this DateRange. Let's avoid useless expensive computation.

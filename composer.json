@@ -4,10 +4,10 @@
     "type": "cakephp-plugin",
     "license": "MIT",
     "require": {
-        "php": ">=8.1",
-        "bedita/core": "^5.0.0",
+        "php": ">=8.3",
+        "bedita/core": "^5.48.0",
         "cakephp/cakephp": "^4.0",
-        "chialab/frontend-kit": "^3.0"
+        "chialab/frontend-kit": "^4.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^5.0",

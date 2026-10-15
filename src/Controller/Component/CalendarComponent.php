@@ -293,8 +293,8 @@ class CalendarComponent extends Component
         $months = range(1, 12);
 
         return array_combine($months, array_map(
-            fn ($monthNum): string => FrozenDate::now()->month($monthNum)->i18nFormat('MMMM'),
-            $months
+            fn($monthNum): string => FrozenDate::now()->month($monthNum)->i18nFormat('MMMM'),
+            $months,
         ));
     }
 
@@ -352,14 +352,14 @@ class CalendarComponent extends Component
             // Add join with DateRanges table.
             ->innerJoin(
                 ['DateBoundaries' => $this->getDateBoundariesSubQuery($dateRanges, $from, $to)],
-                fn (QueryExpression $exp): QueryExpression => $exp->equalFields(
+                fn(QueryExpression $exp): QueryExpression => $exp->equalFields(
                     'DateBoundaries.object_id',
-                    $table->aliasField('id')
-                )
+                    $table->aliasField('id'),
+                ),
             )
             // Sort by closest events.
             ->orderAsc(new FunctionExpression('GREATEST', ['DateBoundaries.closest_start_date' => 'identifier', $from->toIso8601String()]), true)
-            ->orderDesc(fn (QueryExpression $exp): QueryExpression => $exp->isNull('DateBoundaries.closest_end_date'))
+            ->orderDesc(fn(QueryExpression $exp): QueryExpression => $exp->isNull('DateBoundaries.closest_end_date'))
             ->orderAsc('DateBoundaries.closest_end_date');
     }
 
@@ -400,12 +400,12 @@ class CalendarComponent extends Component
                         }
                     })
                     ->groupBy('day')
-                    ->map(fn (array $items): array => collection($items)
+                    ->map(fn(array $items): array => collection($items)
                         ->extract('event')
                         ->sortBy(
-                            fn (ObjectEntity $event): string => $event->get('primary_date_range')->start_date->format('c'),
+                            fn(ObjectEntity $event): string => $event->get('primary_date_range')->start_date->format('c'),
                             SORT_ASC,
-                            SORT_NATURAL
+                            SORT_NATURAL,
                         )
                         ->toList())
                     ->toArray();
