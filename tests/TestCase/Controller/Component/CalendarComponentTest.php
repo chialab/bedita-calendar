@@ -147,10 +147,10 @@ class CalendarComponentTest extends TestCase
     {
         $events = $this->Calendar->findGroupedByDay(
             $this->Objects->loadObjects([], 'events'),
-            new FrozenTime($start)
+            new FrozenTime($start),
         )->toArray();
 
-        $actual = array_map(fn ($items) => array_map(fn ($event) => $event->uname, $items), $events);
+        $actual = array_map(fn($items) => array_map(fn($event) => $event->uname, $items), $events);
 
         static::assertSame($expected, $actual);
     }
@@ -198,9 +198,9 @@ class CalendarComponentTest extends TestCase
         $events = $this->Calendar->findGroupedByDay(
             $this->Objects->loadObjects([], 'events'),
             new FrozenTime($start),
-            new FrozenTime($end)
+            new FrozenTime($end),
         )->toArray();
 
-        static::assertSame($expected, array_map(fn ($items) => array_map(fn ($event) => $event->uname, $items), $events));
+        static::assertSame($expected, array_map(fn($items) => array_map(fn($event) => $event->uname, $items), $events));
     }
 }

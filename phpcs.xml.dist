@@ -11,7 +11,7 @@
     <rule ref="CakePHP">
         <exclude name="Generic.Files.LineLength"/>
     </rule>
-	<rule ref="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat">
+	<rule ref="SlevomatCodingStandard.TypeHints.DNFTypeHintFormat">
         <properties>
             <property name="shortNullable" type="string" value="no"/>
             <property name="nullPosition" type="string" value="last"/>

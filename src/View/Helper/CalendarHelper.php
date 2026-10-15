@@ -50,8 +50,8 @@ class CalendarHelper extends DateRangesHelper
         $months = range(1, 12);
 
         return array_combine($months, array_map(
-            fn ($monthNum): string => $date->month($monthNum)->i18nFormat('MMMM'),
-            $months
+            fn($monthNum): string => $date->month($monthNum)->i18nFormat('MMMM'),
+            $months,
         ));
     }
 
@@ -279,10 +279,10 @@ class CalendarHelper extends DateRangesHelper
         $date = $this->getStartDate() ?? FrozenTime::now();
 
         if (is_string($start)) {
-            $start = FrozenTime::now()->modify($start)->year;
+            $start = (new FrozenTime($start))->year;
         }
         if (is_string($end)) {
-            $end = FrozenTime::now()->modify($end)->year;
+            $end = (new FrozenTime($end))->year;
         }
 
         $years = range($start, $end);
@@ -362,13 +362,11 @@ class CalendarHelper extends DateRangesHelper
      *
      * @param array $ranges Time ranges.
      * @param array|null $options Options for the radio group.
-     * @param array|null $attrs Options for the radio element.
      * @return string The radio element.
      */
-    public function rangeControl(array $ranges, array|null $options = null, array|null $attrs = null): string
+    public function rangeControl(array $ranges, array|null $options = null): string
     {
         $options = $options ?? [];
-        $attrs = $attrs ?? [];
         $ranges = Hash::normalize($ranges);
         $range = $this->getFilter('range');
 
@@ -381,7 +379,7 @@ class CalendarHelper extends DateRangesHelper
             'templates' => [
                 'nestingLabel' => '{{hidden}}{{input}}<label{{attrs}}>{{text}}</label>',
             ],
-        ] + $options, $attrs);
+        ] + $options);
     }
 
     /**

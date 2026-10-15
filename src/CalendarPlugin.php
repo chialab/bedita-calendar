@@ -15,7 +15,7 @@ use Cake\ORM\Query;
 /**
  * Plugin for Chialab\Calendar
  */
-class Plugin extends BasePlugin
+class CalendarPlugin extends BasePlugin
 {
     /**
      * @inheritDoc
@@ -35,7 +35,7 @@ class Plugin extends BasePlugin
                 $table->getEventManager()
                     ->on(
                         'Model.beforeFind',
-                        fn (Event $event, Query $query, ArrayObject $options, bool $primary): Query => $primary ? $query->find('closingDays') : $query,
+                        fn(Event $event, Query $query, ArrayObject $options, bool $primary): Query => $primary ? $query->find('closingDays') : $query,
                     );
             });
     }
