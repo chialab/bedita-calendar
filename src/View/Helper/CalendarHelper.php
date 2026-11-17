@@ -5,7 +5,7 @@ namespace Chialab\Calendar\View\Helper;
 
 use BEdita\Core\Model\Entity\Category;
 use BEdita\Core\Model\Entity\Tag;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\Utility\Hash;
 use Chialab\Calendar\Controller\Component\CalendarComponent;
 use Chialab\Calendar\RelativeDatesTrait;
@@ -26,12 +26,12 @@ class CalendarHelper extends DateRangesHelper
     /**
      * @inheritDoc
      */
-    public $helpers = ['Form', 'Html', 'Url'];
+    protected array $helpers = ['Form', 'Html', 'Url'];
 
     /**
      * @inheritDoc
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'params' => [
             'day' => 'day',
             'month' => 'month',
@@ -46,7 +46,7 @@ class CalendarHelper extends DateRangesHelper
      */
     public function getMonths(): array
     {
-        $date = FrozenTime::now()->day(1);
+        $date = DateTime::now()->day(1);
         $months = range(1, 12);
 
         return array_combine($months, array_map(
@@ -64,7 +64,7 @@ class CalendarHelper extends DateRangesHelper
      */
     public function getDaysInMonth(int $year, int $month): array
     {
-        $last = FrozenTime::create($year, $month, 1);
+        $last = DateTime::create($year, $month, 1);
         $days = range(1, $last->lastOfMonth()->day);
 
         return array_combine($days, $days);
@@ -109,9 +109,9 @@ class CalendarHelper extends DateRangesHelper
     /**
      * Get the calendar range start date.
      *
-     * @return \Cake\I18n\FrozenTime
+     * @return \Cake\I18n\DateTime
      */
-    public function getStartDate(): FrozenTime
+    public function getStartDate(): DateTime
     {
         return $this->getFilter('computed')[0];
     }
@@ -119,9 +119,9 @@ class CalendarHelper extends DateRangesHelper
     /**
      * Get the calendar range end date.
      *
-     * @return \Cake\I18n\FrozenTime|null
+     * @return \Cake\I18n\DateTime|null
      */
-    public function getEndDate(): FrozenTime|null
+    public function getEndDate(): DateTime|null
     {
         return $this->getFilter('computed')[1];
     }
@@ -234,7 +234,7 @@ class CalendarHelper extends DateRangesHelper
     public function dayControl(array|null $options = null): string
     {
         $options = $options ?? [];
-        $date = $this->getStartDate() ?? FrozenTime::now();
+        $date = $this->getStartDate() ?? DateTime::now();
 
         return $this->Form->control($this->getConfig('params.day'), [
             'label' => false,
@@ -254,7 +254,7 @@ class CalendarHelper extends DateRangesHelper
     public function monthControl(array|null $options = null): string
     {
         $options = $options ?? [];
-        $date = $this->getStartDate() ?? FrozenTime::now();
+        $date = $this->getStartDate() ?? DateTime::now();
 
         return $this->Form->control($this->getConfig('params.month'), [
             'label' => '',
@@ -276,13 +276,13 @@ class CalendarHelper extends DateRangesHelper
     public function yearControl(array|null $options = null, int|string|null $start = '-2 years', int|string|null $end = '+2 years'): string
     {
         $options = $options ?? [];
-        $date = $this->getStartDate() ?? FrozenTime::now();
+        $date = $this->getStartDate() ?? DateTime::now();
 
         if (is_string($start)) {
-            $start = (new FrozenTime($start))->year;
+            $start = (new DateTime($start))->year;
         }
         if (is_string($end)) {
-            $end = (new FrozenTime($end))->year;
+            $end = (new DateTime($end))->year;
         }
 
         $years = range($start, $end);

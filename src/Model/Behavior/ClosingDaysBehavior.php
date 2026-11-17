@@ -5,14 +5,15 @@ namespace Chialab\Calendar\Model\Behavior;
 
 use BEdita\Core\Model\Entity\DateRange;
 use BEdita\Core\Model\Entity\ObjectEntity;
-use Cake\Chronos\ChronosInterface;
+use Cake\Chronos\Chronos;
 use Cake\Collection\CollectionInterface;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\Log\Log;
 use Cake\ORM\Behavior;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Closure;
 use Generator;
+use function Cake\Collection\collection;
 
 /**
  * Apply closing days to date ranges.
@@ -21,24 +22,24 @@ class ClosingDaysBehavior extends Behavior
 {
     /**
      * Map of days of week from the name as specified in {@see \BEdita\Core\Model\Entity\DateRange::$params}
-     * to {@see \Cake\Chronos\ChronosInterface} constants.
+     * to {@see \Cake\Chronos\Chronos} constants.
      *
      * @var array<string, int>
      */
     protected const WEEKDAYS = [
-        'monday' => ChronosInterface::MONDAY,
-        'tuesday' => ChronosInterface::TUESDAY,
-        'wednesday' => ChronosInterface::WEDNESDAY,
-        'thursday' => ChronosInterface::THURSDAY,
-        'friday' => ChronosInterface::FRIDAY,
-        'saturday' => ChronosInterface::SATURDAY,
-        'sunday' => ChronosInterface::SUNDAY,
+        'monday' => Chronos::MONDAY,
+        'tuesday' => Chronos::TUESDAY,
+        'wednesday' => Chronos::WEDNESDAY,
+        'thursday' => Chronos::THURSDAY,
+        'friday' => Chronos::FRIDAY,
+        'saturday' => Chronos::SATURDAY,
+        'sunday' => Chronos::SUNDAY,
     ];
 
     /**
      * @inheritDoc
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'implementedFinders' => [
             'closingDays' => 'findClosingDays',
         ],
@@ -47,10 +48,10 @@ class ClosingDaysBehavior extends Behavior
     /**
      * Finder to filter and apply closing days when filtering by date ranges.
      *
-     * @param \Cake\ORM\Query $query Query object.
-     * @return \Cake\ORM\Query
+     * @param \Cake\ORM\Query\SelectQuery $query Query object.
+     * @return \Cake\ORM\Query\SelectQuery
      */
-    public function findClosingDays(Query $query): Query
+    public function findClosingDays(SelectQuery $query): SelectQuery
     {
         return $query->formatResults(
             fn(CollectionInterface $results) => $query->isHydrationEnabled()
@@ -66,7 +67,7 @@ class ClosingDaysBehavior extends Behavior
                     : $object,
             )
             : $results,
-            Query::PREPEND,
+            SelectQuery::PREPEND,
         );
     }
 
@@ -90,7 +91,7 @@ class ClosingDaysBehavior extends Behavior
             return;
         }
 
-        $start = new FrozenTime($dr->start_date);
+        $start = new DateTime($dr->start_date);
         if ($dr->end_date === null && in_array($start->dayOfWeek, $closingDays)) {
             // This is a unit set where its only element is also excluded by its parameters as it is a closing day.
             // Albeit weird, we should be consistent and return an empty set.
@@ -105,7 +106,7 @@ class ClosingDaysBehavior extends Behavior
         $subRanges = [];
         while ($it <= $dr->end_date) {
             $day = current($closingDays);
-            /** @var \Cake\I18n\FrozenTime $it */
+            /** @var \Cake\I18n\DateTime $it */
             $it = $it->next($day);
             $subRanges[] = new DateRange(['start_date' => $it->subDays(1)->endOfDay(), 'end_date' => $it->addDays(1)]);
 

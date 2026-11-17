@@ -8,9 +8,9 @@ use BEdita\Core\Model\Table\ObjectsBaseTable;
 use BEdita\Core\Model\Table\ObjectsTable;
 use Cake\Core\BasePlugin;
 use Cake\Core\PluginApplicationInterface;
-use Cake\Event\Event;
+use Cake\Event\EventInterface;
 use Cake\Event\EventManager;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 
 /**
  * Plugin for Chialab\Calendar
@@ -25,7 +25,7 @@ class CalendarPlugin extends BasePlugin
         parent::bootstrap($app);
 
         EventManager::instance()
-            ->on('Model.initialize', function (Event $event): void {
+            ->on('Model.initialize', function (EventInterface $event): void {
                 $table = $event->getSubject();
                 if (!$table instanceof ObjectsTable && !$table instanceof ObjectsBaseTable) {
                     return;
@@ -35,7 +35,7 @@ class CalendarPlugin extends BasePlugin
                 $table->getEventManager()
                     ->on(
                         'Model.beforeFind',
-                        fn(Event $event, Query $query, ArrayObject $options, bool $primary): Query => $primary ? $query->find('closingDays') : $query,
+                        fn(EventInterface $event, SelectQuery $query, ArrayObject $options, bool $primary): SelectQuery => $primary ? $query->find('closingDays') : $query,
                     );
             });
     }

@@ -1,18 +1,20 @@
 {
     "name": "chialab/calendar",
-    "description": "BEdita 5 plugin for calendar views.",
+    "description": "BEdita 6 plugin for calendar views.",
     "type": "cakephp-plugin",
     "license": "MIT",
     "require": {
         "php": ">=8.3",
-        "bedita/core": "^5.48.0",
-        "cakephp/cakephp": "^4.0",
-        "chialab/frontend-kit": "^4.0"
+        "bedita/api": "^6.16",
+        "bedita/core": "^6.16",
+        "cakephp/cakephp": "^5.4.2",
+        "chialab/frontend-kit": "dev-feat/be-6"
     },
     "require-dev": {
-        "cakephp/cakephp-codesniffer": "^5.0",
-        "cakephp/plugin-installer": "^1.0",
-        "phpunit/phpunit": "~8.5.0 || ^9.3"
+        "cakephp/cakephp-codesniffer": "^5.3",
+        "cakephp/plugin-installer": "^2.0",
+        "league/flysystem-memory": "^3.29",
+        "phpunit/phpunit": "^12.5.1"
     },
     "autoload": {
         "psr-4": {
