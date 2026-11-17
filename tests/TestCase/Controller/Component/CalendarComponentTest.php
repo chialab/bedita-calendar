@@ -7,6 +7,7 @@ use Cake\Controller\ComponentRegistry;
 use Cake\Controller\Controller;
 use Cake\Http\ServerRequest;
 use Cake\I18n\DateTime;
+use Cake\I18n\I18n;
 use Cake\TestSuite\TestCase;
 use Chialab\Calendar\Controller\Component\CalendarComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -89,6 +90,7 @@ class CalendarComponentTest extends TestCase
     public function tearDown(): void
     {
         unset($this->Calendar, $this->Objects, $this->controller);
+        DateTime::setTestNow(null);
 
         parent::tearDown();
     }
@@ -196,5 +198,23 @@ class CalendarComponentTest extends TestCase
         )->toArray();
 
         static::assertSame($expected, array_map(fn($items) => array_map(fn($event) => $event->uname, $items), $events));
+    }
+
+    /** Month labels must not overflow into the next month when today is past the 28th. */
+    public function testMonthsLabelsAtEndOfMonth(): void
+    {
+        DateTime::setTestNow(new DateTime('2026-01-31 12:00:00'));
+        I18n::setLocale('it');
+
+        try {
+            $labels = $this->Calendar->monthsLabels();
+        } finally {
+            I18n::setLocale('en');
+        }
+
+        static::assertSame(range(1, 12), array_keys($labels));
+        static::assertSame('febbraio', $labels[2]);
+        static::assertSame('aprile', $labels[4]);
+        static::assertCount(12, array_unique($labels));
     }
 }

@@ -294,7 +294,7 @@ class CalendarComponent extends Component
         $months = range(1, 12);
 
         return array_combine($months, array_map(
-            fn($monthNum): string => Date::now()->month($monthNum)->i18nFormat('MMMM'),
+            fn($monthNum): string => Date::now()->day(1)->month($monthNum)->i18nFormat('MMMM'),
             $months,
         ));
     }
