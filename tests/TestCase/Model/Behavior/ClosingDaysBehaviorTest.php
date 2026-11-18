@@ -22,7 +22,6 @@ class ClosingDaysBehaviorTest extends TestCase
         'plugin.Chialab/Calendar.DateRanges',
     ];
 
-    // Runs the closing days result formatter on hand-built entities, without touching the database.
     protected function format(array $objects): array
     {
         $table = $this->getTableLocator()->get('Events');
