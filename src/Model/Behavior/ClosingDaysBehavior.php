@@ -56,7 +56,7 @@ class ClosingDaysBehavior extends Behavior
         return $query->formatResults(
             fn(CollectionInterface $results) => $query->isHydrationEnabled()
             ? $results->map(
-                fn(ObjectEntity $object): ObjectEntity => !$object->has('filtered_date_ranges') && $object->has('date_ranges')
+                fn(ObjectEntity $object): ObjectEntity => $object->get('filtered_date_ranges') === null && $object->get('date_ranges') !== null
                     ? $object
                         ->set(
                             'filtered_date_ranges',
