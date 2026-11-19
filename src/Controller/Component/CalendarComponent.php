@@ -7,13 +7,14 @@ use BEdita\Core\Model\Entity\ObjectEntity;
 use Cake\Controller\Component;
 use Cake\Database\Expression\FunctionExpression;
 use Cake\Database\Expression\QueryExpression;
-use Cake\I18n\FrozenDate;
-use Cake\I18n\FrozenTime;
-use Cake\ORM\Query;
+use Cake\I18n\Date;
+use Cake\I18n\DateTime;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Chialab\Calendar\RelativeDatesTrait;
 use Generator;
 use InvalidArgumentException;
+use function Cake\Collection\collection;
 
 /**
  * Calendar component.
@@ -34,14 +35,14 @@ class CalendarComponent extends Component
     /**
      * @inheritDoc
      */
-    public $components = ['Chialab/FrontendKit.Objects'];
+    protected array $components = ['Chialab/FrontendKit.Objects'];
 
     /**
      * Date filter.
      *
-     * @var \Cake\I18n\FrozenTime|null
+     * @var \Cake\I18n\DateTime|null
      */
-    protected FrozenTime|null $dateFilter = null;
+    protected DateTime|null $dateFilter = null;
 
     /**
      * Range filter.
@@ -95,7 +96,7 @@ class CalendarComponent extends Component
     /**
      * @inheritDoc
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'params' => [
             'range' => 'range',
             'categories' => 'categories',
@@ -247,13 +248,13 @@ class CalendarComponent extends Component
      */
     public function getComputedRange(): array
     {
-        $startDate = (new FrozenTime())->startOfDay();
+        $startDate = (new DateTime())->startOfDay();
         $endDate = null;
         $range = $this->getRangeFilter();
         if (!empty($range)) {
             if (is_array($range)) {
-                $startDate = (new FrozenTime($range[0] ?? 'now'))->startOfDay();
-                $endDate = !empty($range[1]) ? (new FrozenTime($range[1]))->endOfDay() : null;
+                $startDate = (new DateTime($range[0] ?? 'now'))->startOfDay();
+                $endDate = !empty($range[1]) ? (new DateTime($range[1]))->endOfDay() : null;
             } else {
                 switch ($range) {
                     case 'today':
@@ -275,7 +276,7 @@ class CalendarComponent extends Component
                         [$startDate, $endDate] = $this->thisMonth();
                         break;
                     default:
-                        $startDate = (new FrozenTime($range))->startOfDay();
+                        $startDate = (new DateTime($range))->startOfDay();
                 }
             }
         }
@@ -293,7 +294,7 @@ class CalendarComponent extends Component
         $months = range(1, 12);
 
         return array_combine($months, array_map(
-            fn($monthNum): string => FrozenDate::now()->month($monthNum)->i18nFormat('MMMM'),
+            fn($monthNum): string => Date::now()->day(1)->month($monthNum)->i18nFormat('MMMM'),
             $months,
         ));
     }
@@ -302,25 +303,22 @@ class CalendarComponent extends Component
      * Get sub-query for joining with date boundaries.
      *
      * @param \Cake\ORM\Table $dateRanges Date ranges table instance.
-     * @param \Cake\I18n\FrozenTime $from From.
-     * @param \Cake\I18n\FrozenTime|null $to To.
-     * @return \Cake\ORM\Query
+     * @param \Cake\I18n\DateTime $from From.
+     * @param \Cake\I18n\DateTime|null $to To.
+     * @return \Cake\ORM\Query\SelectQuery
      */
-    protected function getDateBoundariesSubQuery(Table $dateRanges, FrozenTime $from, FrozenTime|null $to): Query
+    protected function getDateBoundariesSubQuery(Table $dateRanges, DateTime $from, DateTime|null $to): SelectQuery
     {
         $query = $dateRanges->find();
 
         return $query
-            ->find('dateRanges', [
-                'from_date' => $from->toIso8601String(),
-                'to_date' => $to?->toIso8601String(),
-            ])
+            ->find('dateRanges', from_date: $from->toIso8601String(), to_date: $to?->toIso8601String())
             ->select([
                 'object_id' => $dateRanges->aliasField('object_id'),
                 'closest_start_date' => $query->func()->min('start_date'),
                 'closest_end_date' => $query->func()->min('end_date'),
             ])
-            ->group($dateRanges->aliasField('object_id'));
+            ->groupBy($dateRanges->aliasField('object_id'));
     }
 
     /**
@@ -332,13 +330,13 @@ class CalendarComponent extends Component
      * 2. objects starting after the range start are sorted with objects starting sooner appearing first.
      * 3. when two future objects start at the same time, the one that ends sooner appear first.
      *
-     * @param \Cake\ORM\Query $query Query object.
-     * @param \Cake\I18n\FrozenTime $from Range start.
-     * @param \Cake\I18n\FrozenTime|null $to Range end.
-     * @return \Cake\ORM\Query
+     * @param \Cake\ORM\Query\SelectQuery $query Query object.
+     * @param \Cake\I18n\DateTime $from Range start.
+     * @param \Cake\I18n\DateTime|null $to Range end.
+     * @return \Cake\ORM\Query\SelectQuery
      * @throws \InvalidArgumentException Throws an exception when the table being queried is not linked with DateRanges.
      */
-    public function findInRange(Query $query, FrozenTime $from, FrozenTime|null $to = null): Query
+    public function findInRange(SelectQuery $query, DateTime $from, DateTime|null $to = null): SelectQuery
     {
         /** @var \Cake\ORM\Table $table */
         $table = $query->getRepository();
@@ -358,20 +356,20 @@ class CalendarComponent extends Component
                 ),
             )
             // Sort by closest events.
-            ->orderAsc(new FunctionExpression('GREATEST', ['DateBoundaries.closest_start_date' => 'identifier', $from->toIso8601String()]), true)
-            ->orderDesc(fn(QueryExpression $exp): QueryExpression => $exp->isNull('DateBoundaries.closest_end_date'))
-            ->orderAsc('DateBoundaries.closest_end_date');
+            ->orderByAsc(new FunctionExpression('GREATEST', ['DateBoundaries.closest_start_date' => 'identifier', $from->toIso8601String()]), true)
+            ->orderByDesc(fn(QueryExpression $exp): QueryExpression => $exp->isNull('DateBoundaries.closest_end_date'))
+            ->orderByAsc('DateBoundaries.closest_end_date');
     }
 
     /**
      * Group objects by the day in which they occurr.
      *
-     * @param \Cake\ORM\Query $query The query object.
-     * @param \Cake\I18n\FrozenTime $from Range start.
-     * @param \Cake\I18n\FrozenTime|null $to Range end.
-     * @return \Cake\ORM\Query
+     * @param \Cake\ORM\Query\SelectQuery $query The query object.
+     * @param \Cake\I18n\DateTime $from Range start.
+     * @param \Cake\I18n\DateTime|null $to Range end.
+     * @return \Cake\ORM\Query\SelectQuery
      */
-    public function findGroupedByDay(Query $query, FrozenTime $from, FrozenTime|null $to = null): Query
+    public function findGroupedByDay(SelectQuery $query, DateTime $from, DateTime|null $to = null): SelectQuery
     {
         $to = $to ?? $from->addWeeks(1);
 
@@ -382,8 +380,8 @@ class CalendarComponent extends Component
                 $grouped = collection($results)
                     ->unfold(function (ObjectEntity $object) use ($from, $to): Generator {
                         foreach ($object->filtered_date_ranges as $dr) {
-                            $start = (new FrozenTime($dr->start_date))->startOfDay();
-                            $end = (new FrozenTime($dr->end_date ?: $dr->start_date))->endOfDay();
+                            $start = (new DateTime($dr->start_date))->startOfDay();
+                            $end = (new DateTime($dr->end_date ?: $dr->start_date))->endOfDay();
                             if ($start->greaterThanOrEquals($to) || $end->lessThan($from)) {
                                 continue;
                             }

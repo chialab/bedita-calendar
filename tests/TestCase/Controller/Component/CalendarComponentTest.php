@@ -4,19 +4,22 @@ declare(strict_types=1);
 namespace Chialab\Calendar\Test\TestCase\Controller\Component;
 
 use Cake\Controller\ComponentRegistry;
-use Cake\Http\Response;
+use Cake\Controller\Controller;
 use Cake\Http\ServerRequest;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
+use Cake\I18n\I18n;
 use Cake\TestSuite\TestCase;
+use Chialab\Calendar\Controller\Component\CalendarComponent;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * {@see \Chialab\Calendar\Controller\Component\CalendarComponent} Test Case
- *
- * @coversDefaultClass \Chialab\Calendar\Controller\Component\CalendarComponent
  */
+#[CoversClass(CalendarComponent::class)]
 class CalendarComponentTest extends TestCase
 {
-    public $fixtures = [
+    protected array $fixtures = [
         'plugin.BEdita/Core.ObjectTypes',
         'plugin.BEdita/Core.PropertyTypes',
         'plugin.Chialab/Calendar.Properties',
@@ -66,13 +69,7 @@ class CalendarComponentTest extends TestCase
     {
         parent::setUp();
 
-        $request = new ServerRequest();
-        $response = new Response();
-        /** @var \Cake\Controller\Controller $controller */
-        $this->controller = $this->getMockBuilder('Cake\Controller\Controller')
-            ->setConstructorArgs([$request, $response])
-            ->setMethods(null)
-            ->getMock();
+        $this->controller = new Controller(new ServerRequest());
 
         $this->controller->viewBuilder()->setTemplatePath('Pages');
 
@@ -93,6 +90,7 @@ class CalendarComponentTest extends TestCase
     public function tearDown(): void
     {
         unset($this->Calendar, $this->Objects, $this->controller);
+        DateTime::setTestNow(null);
 
         parent::tearDown();
     }
@@ -102,7 +100,7 @@ class CalendarComponentTest extends TestCase
      *
      * @return array[]
      */
-    public function findGroupByDayWithStartProvider()
+    public static function findGroupByDayWithStartProvider(): array
     {
         return [
             'test' => [
@@ -140,14 +138,13 @@ class CalendarComponentTest extends TestCase
      * @param array $expected Expected objects.
      * @param string $start Start date.
      * @return void
-     * @covers ::findGroupedByDay()
-     * @dataProvider findGroupByDayWithStartProvider()
      */
+    #[DataProvider('findGroupByDayWithStartProvider')]
     public function testFindGroupByDayWithStart(array $expected, $start)
     {
         $events = $this->Calendar->findGroupedByDay(
             $this->Objects->loadObjects([], 'events'),
-            new FrozenTime($start),
+            new DateTime($start),
         )->toArray();
 
         $actual = array_map(fn($items) => array_map(fn($event) => $event->uname, $items), $events);
@@ -160,7 +157,7 @@ class CalendarComponentTest extends TestCase
      *
      * @return array[]
      */
-    public function findGroupedByDayWithRangeProvider()
+    public static function findGroupedByDayWithRangeProvider(): array
     {
         return [
             'test' => [
@@ -190,17 +187,34 @@ class CalendarComponentTest extends TestCase
      * @param string $start Start date.
      * @param string $end End date.
      * @return void
-     * @covers ::findGroupedByDay()
-     * @dataProvider findGroupedByDayWithRangeProvider()
      */
+    #[DataProvider('findGroupedByDayWithRangeProvider')]
     public function testFindGroupedByDayWithRange(array $expected, string $start, string $end)
     {
         $events = $this->Calendar->findGroupedByDay(
             $this->Objects->loadObjects([], 'events'),
-            new FrozenTime($start),
-            new FrozenTime($end),
+            new DateTime($start),
+            new DateTime($end),
         )->toArray();
 
         static::assertSame($expected, array_map(fn($items) => array_map(fn($event) => $event->uname, $items), $events));
+    }
+
+    /** Month labels must not overflow into the next month when today is past the 28th. */
+    public function testMonthsLabelsAtEndOfMonth(): void
+    {
+        DateTime::setTestNow(new DateTime('2026-01-31 12:00:00'));
+        I18n::setLocale('it');
+
+        try {
+            $labels = $this->Calendar->monthsLabels();
+        } finally {
+            I18n::setLocale('en');
+        }
+
+        static::assertSame(range(1, 12), array_keys($labels));
+        static::assertSame('febbraio', $labels[2]);
+        static::assertSame('aprile', $labels[4]);
+        static::assertCount(12, array_unique($labels));
     }
 }

@@ -10,7 +10,7 @@ use BEdita\Core\Test\Fixture\ObjectsFixture as BEObjectsFixture;
  */
 class ObjectsFixture extends BEObjectsFixture
 {
-    public $records = [
+    public array $records = [
         // 1
         [
             'uname' => 'bedita',
