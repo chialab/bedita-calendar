@@ -8,7 +8,7 @@
         "bedita/api": "^6.16",
         "bedita/core": "^6.16",
         "cakephp/cakephp": "^5.4.2",
-        "chialab/frontend-kit": "dev-feat/be-6"
+        "chialab/frontend-kit": "^5.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^5.3",
