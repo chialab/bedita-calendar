@@ -10,7 +10,7 @@ use BEdita\Core\Test\Fixture\RelationTypesFixture as BERelationTypesFixture;
  */
 class RelationTypesFixture extends BERelationTypesFixture
 {
-    public $records = [
+    public array $records = [
         [
             'relation_id' => 1,
             'object_type_id' => 1,

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Chialab\Calendar\Test\Fixture;
 
+use Authentication\PasswordHasher\LegacyPasswordHasher;
 use BEdita\Core\Test\Fixture\UsersFixture as BEUsersFixture;
-use Cake\Auth\WeakPasswordHasher;
 
 /**
  * Users test fixture.
@@ -17,7 +17,7 @@ class UsersFixture extends BEUsersFixture
             [
                 'id' => 1,
                 'username' => 'bedita',
-                'password_hash' => (new WeakPasswordHasher(['hashType' => 'md5']))->hash('password1'),
+                'password_hash' => (new LegacyPasswordHasher(['hashType' => 'md5']))->hash('password1'),
                 'blocked' => 0,
                 'last_login' => null,
                 'last_login_err' => null,
